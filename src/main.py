@@ -15,6 +15,11 @@ if __name__ == '__main__':
     if not graph_file_path.exists():
         load_dataset()
     
+    cities = ['Surabaya', 'Jakarta', 'Bandung', 'Semarang', 'Serang', 'Nganjuk', 'Malang', 'Tangerang', 'Bogor', 'Cirebon', 'Blitar']
+    
+    start_city = questionary.select("Choose start city:", choices=cities).ask()
+    destination_city = questionary.select("Choose destination city:", choices=cities).ask()
+    
     algorithm_selection = questionary.select(
         "Select algorithm to run:",
         choices=[
@@ -32,4 +37,4 @@ if __name__ == '__main__':
     elif algorithm_selection == "Uniform Cost Search (UCS)":
         ucs.run()
     elif algorithm_selection == "Depth Limited Search (DLS)":
-        dls.run()
+        dls.run(start_city, destination_city)
