@@ -1,7 +1,8 @@
-import os
-import pickle
+import json
 import networkx as nx
+import os
 import osmnx as ox
+import pickle
 from rich.console import Console
 
 from config.config import DATA_DIR
@@ -55,35 +56,12 @@ def load_malang_osm_data() -> tuple[nx.MultiDiGraph, dict, dict] | None:
         return load_osm_data_online()
 
     try:
-        # Lanjutkan dengan membuat graph_dict dan location_nodes
-        # Definisikan beberapa lokasi penting di Malang Raya berdasarkan OSM
-        important_locations = {
-            "Alun-Alun Malang": (-7.9825, 112.6297),
-            "Stasiun Malang": (-7.9773, 112.6370),
-            "Mall Olympic Garden": (-7.9767, 112.6320),
-            "Universitas Brawijaya": (-7.9536, 112.6142),
-            "Universitas Negeri Malang": (-7.9621, 112.6186),
-            "RS Saiful Anwar": (-7.9677, 112.6361),
-            "Balai Kota Malang": (-7.9780, 112.6343),
-            "Terminal Arjosari": (-7.9192, 112.6465),
-            "Stadion Kanjuruhan": (-8.0342, 112.6217),
-            "Jatim Park 1": (-7.8888, 112.5261),
-            "Jatim Park 2": (-7.8876, 112.5241),
-            "Museum Angkut": (-7.8782, 112.5225),
-            "Alun-Alun Batu": (-7.8719, 112.5242),
-            "Selecta": (-7.8364, 112.5252),
-            "Kampung Wisata Jodipan": (-7.9832, 112.6417),
-            "Taman Rekreasi Sengkaling": (-7.9183, 112.5894),
-            "Pasar Besar Malang": (-7.9823, 112.6329),
-            "Tugu Malang": (-7.9769, 112.6373),
-            "Coban Rondo": (-7.8848, 112.4773),
-            "Kampus UMM": (-7.9182, 112.5970)
-        }
+        with open(os.path.join(DATA_DIR, "malang_locations.json"), 'r') as f:
+            important_locations = json.load(f)
         
         # Temukan node OSM terdekat untuk setiap lokasi penting
         location_nodes = {}
         for name, coords in important_locations.items():
-            # Format yang benar: X=longitude, Y=latitude
             nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0])
             location_nodes[name] = nearest_node
         
@@ -132,35 +110,13 @@ def load_osm_data_online() -> tuple[None | nx.MultiDiGraph, dict, dict]:
         
         # Ubah ke graph bidirectional dengan bobot jarak di meter
         G_undirected = nx.Graph(G)
-        
-        # Definisikan beberapa lokasi penting di Malang Raya berdasarkan OSM
-        important_locations = {
-            "Alun-Alun Malang": (-7.9825, 112.6297),
-            "Stasiun Malang": (-7.9773, 112.6370),
-            "Mall Olympic Garden": (-7.9767, 112.6320),
-            "Universitas Brawijaya": (-7.9536, 112.6142),
-            "Universitas Negeri Malang": (-7.9621, 112.6186),
-            "RS Saiful Anwar": (-7.9677, 112.6361),
-            "Balai Kota Malang": (-7.9780, 112.6343),
-            "Terminal Arjosari": (-7.9192, 112.6465),
-            "Stadion Kanjuruhan": (-8.0342, 112.6217),
-            "Jatim Park 1": (-7.8888, 112.5261),
-            "Jatim Park 2": (-7.8876, 112.5241),
-            "Museum Angkut": (-7.8782, 112.5225),
-            "Alun-Alun Batu": (-7.8719, 112.5242),
-            "Selecta": (-7.8364, 112.5252),
-            "Kampung Wisata Jodipan": (-7.9832, 112.6417),
-            "Taman Rekreasi Sengkaling": (-7.9183, 112.5894),
-            "Pasar Besar Malang": (-7.9823, 112.6329),
-            "Tugu Malang": (-7.9769, 112.6373),
-            "Coban Rondo": (-7.8848, 112.4773),
-            "Kampus UMM": (-7.9182, 112.5970)
-        }
+
+        with open(os.path.join(DATA_DIR, "malang_locations.json"), 'r') as f:
+            important_locations = json.load(f)
         
         # Temukan node OSM terdekat untuk setiap lokasi penting
         location_nodes = {}
         for name, coords in important_locations.items():
-            # Format yang benar: X=longitude, Y=latitude
             nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0])
             location_nodes[name] = nearest_node
         
