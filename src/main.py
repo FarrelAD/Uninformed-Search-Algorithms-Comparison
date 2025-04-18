@@ -1,45 +1,34 @@
-import questionary
 from rich.console import Console
-from rich.panel import Panel
-from pyfiglet import Figlet
+import questionary
 
 from helpers.dataset_helper import load_malang_osm_data
+from helpers.output_helper import show_banner
 from menu import find_route_destination, visualize_graph_networkx
 
 
 console = Console()
 
-
-def show_banner():
-    """Menampilkan banner aplikasi"""
-    f = Figlet(font='slant')
-    banner = f.renderText('UCS Routing')
-    console.print(f"[bold cyan]{banner}[/bold cyan]")
-    console.print(Panel("[bold yellow]SISTEM PENCARIAN RUTE PENGIRIMAN BARANG DI MALANG RAYA[/bold yellow]\n"
-                      "[green]Menggunakan Algoritma Uniform Cost Search (UCS)[/green]\n"
-                      "[blue]UTS Kecerdasan Artificial - 2025[/blue]"))
-
 def main():
-    """Fungsi utama untuk menjalankan aplikasi"""
-    show_banner()
+    """Main function to run the application"""
+    show_banner('EXPEDITION ROUTE FINDER')
     
     G, malang_graph, location_nodes = load_malang_osm_data()
     
     while True:
         choice = questionary.select(
-            "Pilih Menu:",
+            "Select menu:",
             choices=[
-                "1. Cari Rute Pengiriman",
-                "2. Lihat Graf Lokasi",
-                "3. Keluar"
+                "1. Find delivery route",
+                "2. View location graph",
+                "3. Exit"
             ]).ask()
         
-        if choice == "1. Cari Rute Pengiriman":
+        if choice == "1. Find delivery route":
             find_route_destination(G, malang_graph, location_nodes)
-        elif choice == "2. Lihat Graf Lokasi":
+        elif choice == "2. View location graph":
             visualize_graph_networkx(malang_graph)
-        elif choice == "3. Keluar":
-            console.print("[bold green]Terima kasih telah menggunakan aplikasi ini![/bold green]")
+        elif choice == "3. Exit":
+            console.print("[bold green]Thanks for using this app![/bold green]")
             break
 
 
@@ -47,6 +36,6 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        console.print("\n[bold red]Program dihentikan oleh pengguna.[/bold red]")
+        console.print("\n[bold red]Program stopped by user.[/bold red]")
     except Exception as e:
-        console.print(f"\n[bold red]Terjadi kesalahan: {str(e)}[/bold red]")
+        console.print(f"\n[bold red]An error occurred: {str(e)}[/bold red]")
