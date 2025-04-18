@@ -1,8 +1,12 @@
 import time
 import heapq
 from colorama import init
+import networkx as nx
 from rich.console import Console
 from rich.panel import Panel
+import questionary
+
+from helpers.map_helper import show_result, visualize_route
 
 init(autoreset=True)
 console = Console()
@@ -150,3 +154,30 @@ class UniformCostSearch:
             current_location = goal
         
         return full_path, total_cost, list(set(all_visited_nodes))  # Remove duplicate visited nodes
+
+def run_ucs(G: nx.MultiDiGraph, malang_graph: dict, location_nodes: dict, lokasi_awal: str, lokasi_tujuan: str, is_multi: bool, tampilkan_proses: bool, max_operating_time: int):
+    ucs = UniformCostSearch(malang_graph)
+        
+    start_time = time.time()
+    
+    if is_multi:
+        hasil = ucs.search_multigoal(lokasi_awal, lokasi_tujuan, tampilkan_proses)
+    else:
+        hasil = ucs.search(lokasi_awal, lokasi_tujuan, tampilkan_proses)
+        
+    end_time = time.time()
+    waktu_komputasi = end_time - start_time
+    
+    route = show_result(lokasi_awal, lokasi_tujuan, hasil, waktu_komputasi, is_multi)
+    
+    if hasil:
+        _, cost, _ = hasil
+        estimated_time = cost / 833.33  # Asumsi kecepatan 50 km/jam (833.33 m/menit)
+        
+        if estimated_time > max_operating_time:
+            console.print(f"[bold red]Peringatan: Rute ini membutuhkan waktu {estimated_time:.2f} menit, "
+                        f"melebihi batas waktu operasional {max_operating_time} menit![/bold red]")
+
+    if route and G is not None and location_nodes is not None:
+        if questionary.confirm("Apakah Anda ingin melihat visualisasi rute pada peta?").ask():
+            visualize_route(G, location_nodes, route)

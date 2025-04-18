@@ -4,11 +4,9 @@ import os
 import pickle
 import networkx as nx
 import osmnx as ox
-import matplotlib.pyplot as plt
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from pyfiglet import Figlet
 
 console = Console()
 
@@ -59,78 +57,77 @@ def load_malang_osm_data():
     Memuat data OpenStreetMap untuk wilayah Malang Raya
     Mencoba memuat dari cache terlebih dahulu, jika tidak ada maka ambil dari OSM
     """
-    # Coba memuat dari file lokal terlebih dahulu
     G = load_osm_data_from_file()
     
-    if G is not None:
-        # Jika berhasil memuat dari file lokal
-        try:
-            # Lanjutkan dengan membuat graph_dict dan location_nodes
-            # Definisikan beberapa lokasi penting di Malang Raya berdasarkan OSM
-            important_locations = {
-                "Alun-Alun Malang": (-7.9825, 112.6297),
-                "Stasiun Malang": (-7.9773, 112.6370),
-                "Mall Olympic Garden": (-7.9767, 112.6320),
-                "Universitas Brawijaya": (-7.9536, 112.6142),
-                "Universitas Negeri Malang": (-7.9621, 112.6186),
-                "RS Saiful Anwar": (-7.9677, 112.6361),
-                "Balai Kota Malang": (-7.9780, 112.6343),
-                "Terminal Arjosari": (-7.9192, 112.6465),
-                "Stadion Kanjuruhan": (-8.0342, 112.6217),
-                "Jatim Park 1": (-7.8888, 112.5261),
-                "Jatim Park 2": (-7.8876, 112.5241),
-                "Museum Angkut": (-7.8782, 112.5225),
-                "Alun-Alun Batu": (-7.8719, 112.5242),
-                "Selecta": (-7.8364, 112.5252),
-                "Kampung Wisata Jodipan": (-7.9832, 112.6417),
-                "Taman Rekreasi Sengkaling": (-7.9183, 112.5894),
-                "Pasar Besar Malang": (-7.9823, 112.6329),
-                "Tugu Malang": (-7.9769, 112.6373),
-                "Coban Rondo": (-7.8848, 112.4773),
-                "Kampus UMM": (-7.9182, 112.5970)
-            }
+    if G is None:
+        return load_osm_data_online()
+
+    try:
+        # Lanjutkan dengan membuat graph_dict dan location_nodes
+        # Definisikan beberapa lokasi penting di Malang Raya berdasarkan OSM
+        important_locations = {
+            "Alun-Alun Malang": (-7.9825, 112.6297),
+            "Stasiun Malang": (-7.9773, 112.6370),
+            "Mall Olympic Garden": (-7.9767, 112.6320),
+            "Universitas Brawijaya": (-7.9536, 112.6142),
+            "Universitas Negeri Malang": (-7.9621, 112.6186),
+            "RS Saiful Anwar": (-7.9677, 112.6361),
+            "Balai Kota Malang": (-7.9780, 112.6343),
+            "Terminal Arjosari": (-7.9192, 112.6465),
+            "Stadion Kanjuruhan": (-8.0342, 112.6217),
+            "Jatim Park 1": (-7.8888, 112.5261),
+            "Jatim Park 2": (-7.8876, 112.5241),
+            "Museum Angkut": (-7.8782, 112.5225),
+            "Alun-Alun Batu": (-7.8719, 112.5242),
+            "Selecta": (-7.8364, 112.5252),
+            "Kampung Wisata Jodipan": (-7.9832, 112.6417),
+            "Taman Rekreasi Sengkaling": (-7.9183, 112.5894),
+            "Pasar Besar Malang": (-7.9823, 112.6329),
+            "Tugu Malang": (-7.9769, 112.6373),
+            "Coban Rondo": (-7.8848, 112.4773),
+            "Kampus UMM": (-7.9182, 112.5970)
+        }
+        
+        # Temukan node OSM terdekat untuk setiap lokasi penting
+        location_nodes = {}
+        for name, coords in important_locations.items():
+            # Format yang benar: X=longitude, Y=latitude
+            nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0])
+            location_nodes[name] = nearest_node
+        
+        # Buat graph khusus dengan bobot jarak
+        G_undirected = nx.Graph(G)
+        graph_dict = {}
+        for name, node_id in location_nodes.items():
+            graph_dict[name] = []
             
-            # Temukan node OSM terdekat untuk setiap lokasi penting
-            location_nodes = {}
-            for name, coords in important_locations.items():
-                # Format yang benar: X=longitude, Y=latitude
-                nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0])
-                location_nodes[name] = nearest_node
-            
-            # Buat graph khusus dengan bobot jarak
-            G_undirected = nx.Graph(G)
-            graph_dict = {}
-            for name, node_id in location_nodes.items():
-                graph_dict[name] = []
-                
-                # Cari jalur ke semua lokasi lain
-                for other_name, other_node_id in location_nodes.items():
-                    if name != other_name:
-                        try:
-                            # Cari rute terpendek antara dua node
-                            route = nx.shortest_path(G_undirected, node_id, other_node_id, weight='length')
-                            
-                            # Hitung total jarak rute
-                            distance = sum(G_undirected[u][v]['length'] for u, v in zip(route[:-1], route[1:]))
-                            
-                            # Tambahkan ke graph
-                            graph_dict[name].append((other_name, distance))
-                        except nx.NetworkXNoPath:
-                            # Jika tidak ada jalur, abaikan
-                            console.print(f"[yellow]Tidak ada jalur dari {name} ke {other_name}[/yellow]")
-                            pass
-                        except Exception as e:
-                            console.print(f"[yellow]Error mencari jalur dari {name} ke {other_name}: {str(e)}[/yellow]")
-                            pass
-            
-            console.print("[green]Data OSM berhasil dimuat dari cache lokal![/green]")
-            return G, graph_dict, location_nodes
-            
-        except Exception as e:
-            console.print(f"[yellow]Error saat memproses data OSM dari cache: {str(e)}. Mencoba memuat ulang dari OSM...[/yellow]")
-            # Lanjutkan ke blok berikutnya untuk memuat dari OSM
-    
-    # Jika tidak berhasil memuat dari file lokal, ambil dari OSM
+            # Cari jalur ke semua lokasi lain
+            for other_name, other_node_id in location_nodes.items():
+                if name != other_name:
+                    try:
+                        # Cari rute terpendek antara dua node
+                        route = nx.shortest_path(G_undirected, node_id, other_node_id, weight='length')
+                        
+                        # Hitung total jarak rute
+                        distance = sum(G_undirected[u][v]['length'] for u, v in zip(route[:-1], route[1:]))
+                        
+                        # Tambahkan ke graph
+                        graph_dict[name].append((other_name, distance))
+                    except nx.NetworkXNoPath:
+                        # Jika tidak ada jalur, abaikan
+                        console.print(f"[yellow]Tidak ada jalur dari {name} ke {other_name}[/yellow]")
+                        pass
+                    except Exception as e:
+                        console.print(f"[yellow]Error mencari jalur dari {name} ke {other_name}: {str(e)}[/yellow]")
+                        pass
+        
+        console.print("[green]Data OSM berhasil dimuat dari cache lokal![/green]")
+        return G, graph_dict, location_nodes
+        
+    except Exception as e:
+        console.print(f"[yellow]Error saat memproses data OSM dari cache: {str(e)}. Mencoba memuat ulang dari OSM...[/yellow]")
+
+def load_osm_data_online() -> tuple[None | nx.MultiDiGraph, dict, dict]:
     try:
         console.print("[yellow]Memuat data OSM untuk Malang Raya dari internet...[/yellow]")
         
@@ -211,7 +208,7 @@ def load_malang_osm_data():
         # Jika gagal memuat data, gunakan data statis untuk demonstrasi
         return None, get_static_data(), None
     
-def get_static_data():
+def get_static_data() -> dict:
     """
     Data statis sebagai fallback jika tidak bisa memuat dari OSM
     """
@@ -410,45 +407,7 @@ def visualize_route(G, location_nodes, route):
     except Exception as e:
         console.print(f"[red]Error saat membuat visualisasi: {str(e)}[/red]")
 
-def visualize_graph_networkx(graph):
-    """
-    Visualisasi graph menggunakan NetworkX
-    """
-    try:
-        G = nx.Graph()
-        
-        # Tambahkan node dan edge ke graph
-        for source, destinations in graph.items():
-            for dest, weight in destinations:
-                G.add_edge(source, dest, weight=weight)
-        
-        # Atur layout
-        pos = nx.spring_layout(G, seed=42)
-        
-        plt.figure(figsize=(12, 10))
-        plt.title("Graf Lokasi di Malang Raya")
-        
-        # Gambar node dan edge
-        nx.draw_networkx_nodes(G, pos, node_size=700, node_color='lightblue')
-        nx.draw_networkx_edges(G, pos, width=1, alpha=0.7)
-        nx.draw_networkx_labels(G, pos, font_size=8)
-        
-        # Tambahkan label bobot pada edge
-        edge_labels = {(u, v): f"{d['weight']:.0f}m" for u, v, d in G.edges(data=True)}
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=6)
-        
-        plt.axis('off')
-        plt.tight_layout()
-        
-        # Simpan dan tampilkan
-        plt.savefig('malang_graph.png', dpi=300, bbox_inches='tight')
-        console.print("[green]Graf telah disimpan ke [bold]malang_graph.png[/bold][/green]")
-        plt.close()
-    
-    except Exception as e:
-        console.print(f"[red]Error saat membuat visualisasi graf: {str(e)}[/red]")
-
-def tampilkan_hasil(start, goals, hasil, waktu_komputasi, is_multi=False):
+def show_result(start, goals, hasil, waktu_komputasi, is_multi=False):
     """Menampilkan hasil pencarian rute"""
     if hasil:
         path, cost, visited_nodes = hasil
@@ -478,13 +437,3 @@ def tampilkan_hasil(start, goals, hasil, waktu_komputasi, is_multi=False):
         else:
             console.print(Panel(f"[bold red]Tidak ada rute yang ditemukan dari {start} ke {goals}.[/bold red]"))
         return None
-
-def show_banner():
-    print(f"OSMnx version: {ox.__version__}")
-    """Menampilkan banner aplikasi"""
-    f = Figlet(font='slant')
-    banner = f.renderText('UCS Routing')
-    console.print(f"[bold cyan]{banner}[/bold cyan]")
-    console.print(Panel("[bold yellow]SISTEM PENCARIAN RUTE PENGIRIMAN BARANG DI MALANG RAYA[/bold yellow]\n"
-                      "[green]Menggunakan Algoritma Uniform Cost Search (UCS)[/green]\n"
-                      "[blue]UTS Kecerdasan Artificial - 2025[/blue]"))
