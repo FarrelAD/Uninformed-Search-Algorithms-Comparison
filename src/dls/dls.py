@@ -81,3 +81,8 @@ def run(start_city: str, destination_city: str) -> None:
     print(f"Path found: {path}")
     print(f"Path length: {len(path)}")
 
+def run_dls():
+    """
+    Execute the Depth Limited Search (DLS) algorithm.
+    """
+    print('DEPTH LIMITED SEARCH ALGORITHM')
