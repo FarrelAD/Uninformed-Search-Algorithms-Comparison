@@ -1,9 +1,11 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+import os
 from rich.console import Console
 import questionary
 
 from ucs.ucs import run_ucs
+from config.config import IMG_DIR
 
 
 console = Console()
@@ -52,23 +54,24 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
         if lokasi_awal == lokasi_tujuan:
             console.print("[bold red]Lokasi awal dan tujuan sama. Silakan pilih lokasi yang berbeda.[/bold red]")
     
-    max_operating_time = questionary.text(
+    max_operating_time = int(questionary.text(
         "Berapa waktu maksimal operasional kendaraan (dalam menit)?",
         validate=lambda text: text.isdigit() and int(text) > 0,
         default="120",
         instruction="(default: 120 menit)"
-    ).ask()
+    ).ask())
     
     algorithm_choice = questionary.select(
         "Pilih algoritma pencarian:",
         choices=[
-            "1. Uniform Cost Search (UCS)",
-            "2. A* Search"
+            "1. Breadth-First Search (BFS)",
+            "2. Depth-First Search (DFS)",
+            "3. Uniform Cost Search (UCS)",
+            "5. Depth-Limited Search"
         ]
     ).ask()
     
     tampilkan_proses = questionary.confirm("Apakah Anda ingin melihat ilustrasi proses pencarian?").ask()
-    
     
     if algorithm_choice == "1. Breadth-First Search (BFS)":
         pass
@@ -112,8 +115,10 @@ def visualize_graph_networkx(graph):
         plt.axis('off')
         plt.tight_layout()
         
-        # Simpan dan tampilkan
-        plt.savefig('malang_graph.png', dpi=300, bbox_inches='tight')
+        if not os.path.exists(IMG_DIR):
+            os.makedirs(IMG_DIR)
+            
+        plt.savefig(f"{IMG_DIR}/malang_graph.png", dpi=300, bbox_inches='tight')
         console.print("[green]Graf telah disimpan ke [bold]malang_graph.png[/bold][/green]")
         plt.close()
     

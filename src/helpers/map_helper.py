@@ -8,6 +8,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from config.config import DATA_DIR, MAPS_DIR
+
 console = Console()
 
 def save_osm_data(G, filename="malang_osm_data.pkl"):
@@ -15,14 +17,11 @@ def save_osm_data(G, filename="malang_osm_data.pkl"):
     Menyimpan data OSM ke file lokal
     """
     try:
-        # Buat direktori data jika belum ada
-        data_dir = "osm_data"
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
+        if not os.path.exists(DATA_DIR):
+            os.makedirs(DATA_DIR)
         
-        filepath = os.path.join(data_dir, filename)
+        filepath = os.path.join(DATA_DIR, filename)
         
-        # Simpan graph ke file pickle
         with open(filepath, 'wb') as f:
             pickle.dump(G, f)
         
@@ -37,8 +36,7 @@ def load_osm_data_from_file(filename="malang_osm_data.pkl"):
     Memuat data OSM dari file lokal
     """
     try:
-        data_dir = "osm_data"
-        filepath = os.path.join(data_dir, filename)
+        filepath = os.path.join(DATA_DIR, filename)
         
         if os.path.exists(filepath):
             with open(filepath, 'rb') as f:
@@ -394,12 +392,11 @@ def visualize_route(G, location_nodes, route):
                 console.print(f"[yellow]Error adding marker for {route[i]}: {str(e)}[/yellow]")
         
         # Buat direktori untuk menyimpan hasil peta jika belum ada
-        maps_dir = "route_maps"
-        if not os.path.exists(maps_dir):
-            os.makedirs(maps_dir)
+        if not os.path.exists(MAPS_DIR):
+            os.makedirs(MAPS_DIR)
         
         # Simpan ke file HTML dengan nama unik
-        map_filename = f"{maps_dir}/route_{start_location}_to_{end_location}_{timestamp}.html"
+        map_filename = f"{MAPS_DIR}/route_{start_location}_to_{end_location}_{timestamp}.html"
         route_map.save(map_filename)
         console.print(f"[green]Peta rute telah disimpan ke [bold]{map_filename}[/bold][/green]")
         console.print("[yellow]Silakan buka file tersebut di browser Anda.[/yellow]")
