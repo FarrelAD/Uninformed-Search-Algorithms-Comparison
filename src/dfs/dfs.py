@@ -1,4 +1,4 @@
-def run():
+def run_dfs():
     """
     Execute Depth First Search (DFS) algorithm.
     """

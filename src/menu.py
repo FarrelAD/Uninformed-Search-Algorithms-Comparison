@@ -4,7 +4,10 @@ import os
 from rich.console import Console
 import questionary
 
+from bfs.bfs import run_bfs
+from dfs.dfs import run_dfs
 from ucs.ucs import run_ucs
+from dls.dls import run_dls
 from config.config import IMG_DIR
 
 
@@ -67,20 +70,20 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
             "1. Breadth-First Search (BFS)",
             "2. Depth-First Search (DFS)",
             "3. Uniform Cost Search (UCS)",
-            "5. Depth-Limited Search"
+            "5. Depth-Limited Search (DLS)"
         ]
     ).ask()
     
     tampilkan_proses = questionary.confirm("Apakah Anda ingin melihat ilustrasi proses pencarian?").ask()
     
     if algorithm_choice == "1. Breadth-First Search (BFS)":
-        pass
+        run_bfs()
     elif algorithm_choice == "2. Depth-First Search (DFS)":
-        pass
+        run_dfs()
     elif algorithm_choice == "3. Uniform Cost Search (UCS)":
         run_ucs(G, malang_graph, location_nodes, lokasi_awal, lokasi_tujuan, is_multi, tampilkan_proses, max_operating_time)
     elif algorithm_choice == "4. Depth-Limited Search":
-        pass
+        run_dls()
 
 def visualize_graph_networkx(graph: dict) -> None:
     """

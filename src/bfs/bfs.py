@@ -1,4 +1,4 @@
-def run():
+def run_bfs():
     """
     Execute the Breadth First Search (BFS) algorithm.
     """
