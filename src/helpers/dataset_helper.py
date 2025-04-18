@@ -6,12 +6,13 @@ import pickle
 from rich.console import Console
 
 from config.config import DATA_DIR
+from store.states import GlobalState
 
 console = Console()
 
-def save_osm_data(G, filename="malang_osm_data.pkl") -> None:
+def save_osm_data(G: nx.MultiDiGraph, filename="malang_osm_data.pkl") -> None:
     """
-    Menyimpan data OSM ke file lokal
+    Save OpenStreetMap (OSM) data to a local file using pickle
     """
     try:
         if not os.path.exists(DATA_DIR):
@@ -28,7 +29,7 @@ def save_osm_data(G, filename="malang_osm_data.pkl") -> None:
 
 def load_osm_data_from_file(filename="malang_osm_data.pkl") -> nx.MultiDiGraph | None:
     """
-    Memuat data OSM dari file lokal
+    Load OpenStreetMap (OSM) data from a local file using pickle
     """
     try:
         filepath = os.path.join(DATA_DIR, filename)
@@ -45,15 +46,15 @@ def load_osm_data_from_file(filename="malang_osm_data.pkl") -> nx.MultiDiGraph |
         console.print(f"[red]Error saat memuat data OSM dari file: {str(e)}[/red]")
         return None
 
-def load_malang_osm_data() -> tuple[nx.MultiDiGraph, dict, dict] | None:
+def load_malang_osm_data() -> None:
     """
-    Memuat data OpenStreetMap untuk wilayah Malang Raya
-    Mencoba memuat dari cache terlebih dahulu, jika tidak ada maka ambil dari OSM
+    Loads OSM data for Malang Raya region.
+    Attempts to load from cache first, if not available then fetch from OSM.
     """
     G = load_osm_data_from_file()
     
     if G is None:
-        return load_osm_data_online()
+        G = load_osm_data_online()
 
     try:
         with open(os.path.join(DATA_DIR, "malang_locations.json"), 'r') as f:
@@ -75,16 +76,12 @@ def load_malang_osm_data() -> tuple[nx.MultiDiGraph, dict, dict] | None:
             for other_name, other_node_id in location_nodes.items():
                 if name != other_name:
                     try:
-                        # Cari rute terpendek antara dua node
                         route = nx.shortest_path(G_undirected, node_id, other_node_id, weight='length')
                         
-                        # Hitung total jarak rute
                         distance = sum(G_undirected[u][v]['length'] for u, v in zip(route[:-1], route[1:]))
                         
-                        # Tambahkan ke graph
                         graph_dict[name].append((other_name, distance))
                     except nx.NetworkXNoPath:
-                        # Jika tidak ada jalur, abaikan
                         console.print(f"[yellow]Tidak ada jalur dari {name} ke {other_name}[/yellow]")
                         pass
                     except Exception as e:
@@ -92,15 +89,20 @@ def load_malang_osm_data() -> tuple[nx.MultiDiGraph, dict, dict] | None:
                         pass
         
         console.print("[green]Data OSM berhasil dimuat dari cache lokal![/green]")
-        return G, graph_dict, location_nodes
+        
+        GlobalState.G = G
+        GlobalState.malang_graph = graph_dict
+        GlobalState.location_nodes = location_nodes
+        
+        print("DEBUG!")
+        print(f"Malang Graph: {GlobalState.location_nodes}")
     except Exception as e:
         console.print(f"[yellow]Error saat memproses data OSM dari cache: {str(e)}. Mencoba memuat ulang dari OSM...[/yellow]")
 
-def load_osm_data_online() -> tuple[None | nx.MultiDiGraph, dict, dict]:
+def load_osm_data_online() -> nx.MultiDiGraph | None:
     try:
         console.print("[yellow]Memuat data OSM untuk Malang Raya dari internet...[/yellow]")
         
-        # Coba mendapatkan data dari OpenStreetMap
         G = ox.graph_from_place("Malang, East Java, Indonesia", network_type="drive", simplify=True)
         
         if not 'length' in list(G.edges(data=True))[0][2]:
@@ -108,45 +110,11 @@ def load_osm_data_online() -> tuple[None | nx.MultiDiGraph, dict, dict]:
         
         save_osm_data(G)
         
-        # Ubah ke graph bidirectional dengan bobot jarak di meter
-        G_undirected = nx.Graph(G)
-
-        with open(os.path.join(DATA_DIR, "malang_locations.json"), 'r') as f:
-            important_locations = json.load(f)
-        
-        # Temukan node OSM terdekat untuk setiap lokasi penting
-        location_nodes = {}
-        for name, coords in important_locations.items():
-            nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0])
-            location_nodes[name] = nearest_node
-        
-        # Buat graph khusus dengan bobot jarak
-        graph_dict = {}
-        for name, node_id in location_nodes.items():
-            graph_dict[name] = []
-            
-            # Cari jalur ke semua lokasi lain
-            for other_name, other_node_id in location_nodes.items():
-                if name != other_name:
-                    try:
-                        route = nx.shortest_path(G_undirected, node_id, other_node_id, weight='length')
-                        
-                        distance = sum(G_undirected[u][v]['length'] for u, v in zip(route[:-1], route[1:]))
-                        
-                        graph_dict[name].append((other_name, distance))
-                    except nx.NetworkXNoPath:
-                        console.print(f"[yellow]Tidak ada jalur dari {name} ke {other_name}[/yellow]")
-                        pass
-                    except Exception as e:
-                        console.print(f"[yellow]Error mencari jalur dari {name} ke {other_name}: {str(e)}[/yellow]")
-                        pass
-        
         console.print("[green]Data OSM berhasil dimuat dari internet![/green]")
-        return G, graph_dict, location_nodes
-    
+        return G
     except Exception as e:
         console.print(f"[bold red]Error saat memuat data OSM: {str(e)}[/bold red]")
-        return None, get_static_data(), None
+        return None
     
 def get_static_data() -> dict:
     """
