@@ -35,8 +35,6 @@ class UniformCostSearch:
         goal = goal if goal is not None else GlobalState.destination_location
         
         # Format: (biaya_sejauh_ini, lokasi, path_sejauh_ini)
-        print(f"DEBUG! Start: {start}, Goal: {goal}")
-        print(f"GlobalState: {GlobalState.start_location}")
         
         open_list = [(0, start, [start])]
         heapq.heapify(open_list)

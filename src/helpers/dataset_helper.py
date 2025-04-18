@@ -93,9 +93,6 @@ def load_malang_osm_data() -> None:
         GlobalState.G = G
         GlobalState.malang_graph = graph_dict
         GlobalState.location_nodes = location_nodes
-        
-        print("DEBUG!")
-        print(f"Malang Graph: {GlobalState.location_nodes}")
     except Exception as e:
         console.print(f"[yellow]Error saat memproses data OSM dari cache: {str(e)}. Mencoba memuat ulang dari OSM...[/yellow]")
 
