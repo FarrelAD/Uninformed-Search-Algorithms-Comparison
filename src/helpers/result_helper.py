@@ -5,8 +5,9 @@ import os
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+import webbrowser
 
-from config.config import MAPS_DIR
+from config.config import MAPS_DIR, JINJA_ENV
 
 console = Console()
 
@@ -86,10 +87,16 @@ def visualize_route(G: nx.multidigraph, location_nodes: dict, route: list) -> No
             os.makedirs(MAPS_DIR)
         
         map_filename = f"{MAPS_DIR}/route_{start_location}_to_{end_location}_{timestamp}.html"
-        route_map.save(map_filename)
+        html_template = JINJA_ENV.get_template("map.html")
+        output_html = html_template.render(map=route_map._repr_html_())
+        
+        with open(map_filename, "w") as f:
+            f.write(output_html)
+        
         console.print(f"[green]Peta rute telah disimpan ke [bold]{map_filename}[/bold][/green]")
         console.print("[yellow]Silakan buka file tersebut di browser Anda.[/yellow]")
-    
+        
+        webbrowser.open(f"file://{map_filename}", new=2)
     except Exception as e:
         console.print(f"[red]Error saat membuat visualisasi: {str(e)}[/red]")
 
