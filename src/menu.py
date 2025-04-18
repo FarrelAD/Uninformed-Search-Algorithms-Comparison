@@ -15,58 +15,56 @@ from helpers.system_helper import open_image
 console = Console()
 
 def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_nodes: dict) -> None:
-    daftar_lokasi = sorted(malang_graph.keys())
+    list_of_locations = sorted(malang_graph.keys())
 
-    console.print("\n[bold cyan]Pilih Lokasi Awal dan Tujuan[/bold cyan]")
+    console.print("\n[bold cyan]Select start and destination location[/bold cyan]")
     
-    lokasi_awal = questionary.select(
+    start_location = questionary.select(
         "Pilih lokasi awal:",
-        choices=daftar_lokasi
+        choices=list_of_locations
     ).ask()
     
-    is_multi = questionary.confirm("Apakah Anda ingin melakukan pengiriman ke beberapa tujuan (multi-goal)?").ask()
+    is_multi = questionary.confirm("Do you want to send to multiple destinations? (multi-goal)?").ask()
     
     if is_multi:
-        lokasi_tujuan = []
-        jumlah_tujuan = questionary.text(
-            "Berapa jumlah tujuan yang ingin dikunjungi?",
+        destination_location = []
+        total_destionation = questionary.text(
+            "How many destination do you want to visit?",
             validate=lambda text: text.isdigit() and 1 <= int(text) <= 5,
-            instruction="(Masukukan angka 1-5)"
+            instruction="Enter the number of destination (1-5): "
         ).ask()
-        jumlah_tujuan = int(jumlah_tujuan)
+        total_destionation = int(total_destionation)
         
-        for i in range(jumlah_tujuan):
-            # Filter lokasi yang sudah dipilih
-            available_locations = [loc for loc in daftar_lokasi if loc != lokasi_awal and loc not in lokasi_tujuan]
+        for i in range(total_destionation):
+            available_locations = [loc for loc in list_of_locations if loc != start_location and loc not in destination_location]
             if not available_locations:
-                console.print("[bold red]Semua lokasi sudah dipilih![/bold red]")
+                console.print("[bold red]All locations have been selected![/bold red]")
                 break
-                
+            
             next_destination = questionary.select(
-                f"Pilih tujuan ke-{i+1}:",
+                f"Select destination {i+1}:",
                 choices=available_locations
             ).ask()
-            lokasi_tujuan.append(next_destination)
+            destination_location.append(next_destination)
         
-        console.print(f"[green]Tujuan yang akan dikunjungi: {', '.join(lokasi_tujuan)}[/green]")
+        console.print(f"[green]Destinations to visit: {', '.join(destination_location)}[/green]")
     else:
-        lokasi_tujuan = questionary.select(
-            "Pilih lokasi tujuan:",
-            choices=[loc for loc in daftar_lokasi if loc != lokasi_awal]
+        destination_location = questionary.select(
+            "Select destination:",
+            choices=[loc for loc in list_of_locations if loc != start_location]
         ).ask()
-        
-        if lokasi_awal == lokasi_tujuan:
-            console.print("[bold red]Lokasi awal dan tujuan sama. Silakan pilih lokasi yang berbeda.[/bold red]")
+
     
-    max_operating_time = int(questionary.text(
+    max_operating_time = questionary.text(
         "Berapa waktu maksimal operasional kendaraan (dalam menit)?",
         validate=lambda text: text.isdigit() and int(text) > 0,
         default="120",
         instruction="(default: 120 menit)"
-    ).ask())
+    ).ask()
+    max_operating_time = int(max_operating_time)
     
     algorithm_choice = questionary.select(
-        "Pilih algoritma pencarian:",
+        "Select searching algorithm:",
         choices=[
             "1. Breadth-First Search (BFS)",
             "2. Depth-First Search (DFS)",
@@ -75,23 +73,25 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
         ]
     ).ask()
     
-    tampilkan_proses = questionary.confirm("Apakah Anda ingin melihat ilustrasi proses pencarian?").ask()
+    show_process = questionary.confirm("Do you want to see the illustration of the search process?").ask()
     
     if algorithm_choice == "1. Breadth-First Search (BFS)":
         run_bfs()
     elif algorithm_choice == "2. Depth-First Search (DFS)":
         run_dfs()
     elif algorithm_choice == "3. Uniform Cost Search (UCS)":
-        run_ucs(G, malang_graph, location_nodes, lokasi_awal, lokasi_tujuan, is_multi, tampilkan_proses, max_operating_time)
+        run_ucs(G, malang_graph, location_nodes, start_location, destination_location, is_multi, show_process, max_operating_time)
     elif algorithm_choice == "4. Depth-Limited Search":
         run_dls()
 
 def visualize_graph_networkx(graph: dict) -> None:
     """
-    Visualisasi graph menggunakan NetworkX. Disimpan dalam format PNG.
+    Visualization of the graph using NetworkX and Matplotlib. Saves the graph as an image file.
+    Args:
+        graph (dict): The graph data structure with locations and their connections.
     """
     
-    console.print("\n[bold cyan]Visualisasi Graf Lokasi[/bold cyan]")
+    console.print("\n[bold cyan]Visualization of Location Graph[/bold cyan]")
     
     try:
         G = nx.Graph()
@@ -103,7 +103,7 @@ def visualize_graph_networkx(graph: dict) -> None:
         pos = nx.spring_layout(G, seed=42)
         
         plt.figure(figsize=(12, 10))
-        plt.title("Graf Lokasi di Malang Raya")
+        plt.title("Graph Data Structure of Malang Raya Locations")
         
         nx.draw_networkx_nodes(G, pos, node_size=700, node_color='lightblue')
         nx.draw_networkx_edges(G, pos, width=1, alpha=0.7)
@@ -120,9 +120,9 @@ def visualize_graph_networkx(graph: dict) -> None:
         
         filename = f"{IMG_DIR}/malang_graph.png"
         plt.savefig(filename, dpi=300, bbox_inches='tight')
-        console.print("[green]Graf telah disimpan ke [bold]malang_graph.png[/bold][/green]")
+        console.print("[green]Graph has been saved to [bold]malang_graph.png[/bold][/green]")
         plt.close()
         
         open_image(filename)
     except Exception as e:
-        console.print(f"[red]Error saat membuat visualisasi graf: {str(e)}[/red]")
+        console.print(f"[red]Error occurred while creating graph visualization: {str(e)}[/red]")
