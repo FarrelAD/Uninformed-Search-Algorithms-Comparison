@@ -4,7 +4,7 @@ import os
 from rich.console import Console
 import questionary
 
-from bfs.bfs import run_bfs
+from bfs.bfs2 import run_bfs
 from dfs.dfs import run_dfs
 from ucs.ucs import run_ucs
 from dls.dls import run_dls
