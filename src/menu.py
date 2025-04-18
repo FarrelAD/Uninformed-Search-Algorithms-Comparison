@@ -10,7 +10,7 @@ from config.config import IMG_DIR
 
 console = Console()
 
-def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_nodes: dict):
+def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_nodes: dict) -> None:
     daftar_lokasi = sorted(malang_graph.keys())
 
     console.print("\n[bold cyan]Pilih Lokasi Awal dan Tujuan[/bold cyan]")
@@ -82,7 +82,7 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
     elif algorithm_choice == "4. Depth-Limited Search":
         pass
 
-def visualize_graph_networkx(graph):
+def visualize_graph_networkx(graph: dict) -> None:
     """
     Visualisasi graph menggunakan NetworkX. Disimpan dalam format PNG.
     """
@@ -92,23 +92,19 @@ def visualize_graph_networkx(graph):
     try:
         G = nx.Graph()
         
-        # Tambahkan node dan edge ke graph
         for source, destinations in graph.items():
             for dest, weight in destinations:
                 G.add_edge(source, dest, weight=weight)
         
-        # Atur layout
         pos = nx.spring_layout(G, seed=42)
         
         plt.figure(figsize=(12, 10))
         plt.title("Graf Lokasi di Malang Raya")
         
-        # Gambar node dan edge
         nx.draw_networkx_nodes(G, pos, node_size=700, node_color='lightblue')
         nx.draw_networkx_edges(G, pos, width=1, alpha=0.7)
         nx.draw_networkx_labels(G, pos, font_size=8)
         
-        # Tambahkan label bobot pada edge
         edge_labels = {(u, v): f"{d['weight']:.0f}m" for u, v, d in G.edges(data=True)}
         nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=6)
         

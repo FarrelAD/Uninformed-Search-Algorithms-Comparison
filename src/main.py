@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.panel import Panel
 from pyfiglet import Figlet
 
-from helpers.map_helper import load_malang_osm_data
+from helpers.dataset_helper import load_malang_osm_data
 from menu import find_route_destination, visualize_graph_networkx
 
 

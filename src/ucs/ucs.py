@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.panel import Panel
 import questionary
 
-from helpers.map_helper import show_result, visualize_route
+from helpers.result_helper import show_result, visualize_route
 
 init(autoreset=True)
 console = Console()
@@ -155,20 +155,20 @@ class UniformCostSearch:
         
         return full_path, total_cost, list(set(all_visited_nodes))  # Remove duplicate visited nodes
 
-def run_ucs(G: nx.MultiDiGraph, malang_graph: dict, location_nodes: dict, lokasi_awal: str, lokasi_tujuan: str, is_multi: bool, tampilkan_proses: bool, max_operating_time: int):
+def run_ucs(G: nx.MultiDiGraph, malang_graph: dict, location_nodes: dict, start_location: str, end_location: str, is_multi: bool, show_process: bool, max_operating_time: int):
     ucs = UniformCostSearch(malang_graph)
         
     start_time = time.time()
     
     if is_multi:
-        hasil = ucs.search_multigoal(lokasi_awal, lokasi_tujuan, tampilkan_proses)
+        hasil = ucs.search_multigoal(start_location, end_location, show_process)
     else:
-        hasil = ucs.search(lokasi_awal, lokasi_tujuan, tampilkan_proses)
+        hasil = ucs.search(start_location, end_location, show_process)
         
     end_time = time.time()
-    waktu_komputasi = end_time - start_time
+    time_computation = end_time - start_time
     
-    route = show_result(lokasi_awal, lokasi_tujuan, hasil, waktu_komputasi, is_multi)
+    route = show_result(start_location, end_location, hasil, time_computation, is_multi)
     
     if hasil:
         _, cost, _ = hasil
