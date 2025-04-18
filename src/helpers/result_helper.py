@@ -8,45 +8,38 @@ from rich.table import Table
 import webbrowser
 
 from config.config import MAPS_DIR, JINJA_ENV
+from store.states import GlobalState
 
 console = Console()
 
-def visualize_route(G: nx.multidigraph, location_nodes: dict, route: list) -> None:
+def visualize_route(route: list) -> None:
     """
-    Visualisasi rute pada peta menggunakan folium dengan nama file yang unik
+    Visualizes the route on a map using folium and saves it to a file with a unique name.
     """
     try:
-        if G is None or location_nodes is None:
+        if GlobalState.G is None or GlobalState.location_nodes is None:
             console.print("[red]Tidak dapat memvisualisasikan rute: data OSM tidak tersedia[/red]")
             return
         
-        # Buat nama file unik berdasarkan waktu dan lokasi
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         start_location = route[0].replace(" ", "_")
         end_location = route[-1].replace(" ", "_")
         
-        # Dapatkan koordinat untuk setiap lokasi dalam rute
-        route_nodes = [location_nodes[loc] for loc in route]
+        route_nodes = [GlobalState.location_nodes[loc] for loc in route]
         
-        # Buat route sebagai list node pairs
         pairs = []
         for i in range(len(route_nodes)-1):
             pairs.append((route_nodes[i], route_nodes[i+1]))
             
-        # Inisialisasi peta
-        map_center = [G.nodes[route_nodes[0]]['y'], G.nodes[route_nodes[0]]['x']]
+        map_center = [GlobalState.G.nodes[route_nodes[0]]['y'], GlobalState.G.nodes[route_nodes[0]]['x']]
         route_map = folium.Map(location=map_center, zoom_start=13)
         
-        # Plot edges
         for u, v in pairs:
             try:
-                # Find the shortest path between points
-                path = nx.shortest_path(G, u, v, weight='length')
+                path = nx.shortest_path(GlobalState.G, u, v, weight='length')
                 
-                # Extract coordinates for the path
-                path_coords = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in path]
+                path_coords = [(GlobalState.G.nodes[node]['y'], GlobalState.G.nodes[node]['x']) for node in path]
                 
-                # Add path to map
                 folium.PolyLine(
                     path_coords, 
                     color='red',
@@ -57,13 +50,11 @@ def visualize_route(G: nx.multidigraph, location_nodes: dict, route: list) -> No
             except Exception as e:
                 console.print(f"[yellow]Error plotting segment: {str(e)}[/yellow]")
         
-        # Add markers for each location
         for i, node in enumerate(route_nodes):
             try:
-                lat = G.nodes[node]['y']
-                lon = G.nodes[node]['x']
+                lat = GlobalState.G.nodes[node]['y']
+                lon = GlobalState.G.nodes[node]['x']
                 
-                # Choose icon based on position
                 if i == 0:  # Start
                     icon = folium.Icon(color='green', icon='play')
                     popup_text = f"Start: {route[i]}"
@@ -86,7 +77,7 @@ def visualize_route(G: nx.multidigraph, location_nodes: dict, route: list) -> No
         if not os.path.exists(MAPS_DIR):
             os.makedirs(MAPS_DIR)
         
-        map_filename = f"{MAPS_DIR}/route_{start_location}_to_{end_location}_{timestamp}.html"
+        map_filename = os.path.join(MAPS_DIR, f"route_{start_location}_to_{end_location}_{timestamp}.html")
         html_template = JINJA_ENV.get_template("map.html")
         output_html = html_template.render(map=route_map._repr_html_())
         
@@ -100,14 +91,16 @@ def visualize_route(G: nx.multidigraph, location_nodes: dict, route: list) -> No
     except Exception as e:
         console.print(f"[red]Error saat membuat visualisasi: {str(e)}[/red]")
 
-def show_result(start: str, goals: str, result: tuple[list, int, list], time_computation: float, is_multi: bool = False) -> None | list:
-    """Menampilkan hasil pencarian rute"""
+def show_result(result: tuple[list, int, list], time_computation: float) -> None:
+    """
+    Show the result of the search in a table format.
+    """
     if not result:
-        if is_multi:
-            console.print(Panel(f"[bold red]Tidak ada rute yang ditemukan dari {start} ke salah satu tujuan.[/bold red]"))
+        if GlobalState.is_multi:
+            console.print(Panel(f"[bold red]Tidak ada rute yang ditemukan dari {GlobalState.start_location} ke salah satu tujuan.[/bold red]"))
         else:
-            console.print(Panel(f"[bold red]Tidak ada rute yang ditemukan dari {start} ke {goals}.[/bold red]"))
-        return None
+            console.print(Panel(f"[bold red]Tidak ada rute yang ditemukan dari {GlobalState.start_location} ke {GlobalState.destination_location}.[/bold red]"))
+        return
     
     path, cost, visited_nodes = result
     
@@ -115,18 +108,17 @@ def show_result(start: str, goals: str, result: tuple[list, int, list], time_com
     table.add_column("Informasi", style="cyan")
     table.add_column("Detail", style="green")
     
-    table.add_row("Dari", start)
+    table.add_row("Dari", GlobalState.start_location)
     
-    if is_multi:
-        table.add_row("Ke (Multi-Goal)", ", ".join(goals))
+    if GlobalState.is_multi:
+        table.add_row("Ke (Multi-Goal)", ", ".join(GlobalState.destination_location))
     else:
-        table.add_row("Ke", goals)
+        table.add_row("Ke", GlobalState.destination_location)
         
     table.add_row("Rute", " -> ".join(path))
     table.add_row("Total jarak", f"{cost:.2f} meter")
-    table.add_row("Estimasi waktu", f"{cost/833.33:.2f} menit")  # Asumsi kecepatan 50 km/jam
+    table.add_row("Estimasi waktu", f"{cost/833.33:.2f} menit")  # Assume speed is 50 km/h (833.33 m/minutes)
     table.add_row("Node dikunjungi", str(len(visited_nodes)))
     table.add_row("Waktu komputasi", f"{time_computation:.4f} detik")
     
     console.print(table)
-    return path

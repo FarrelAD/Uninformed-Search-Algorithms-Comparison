@@ -10,16 +10,16 @@ from ucs.ucs import run_ucs
 from dls.dls import run_dls
 from config.config import IMG_DIR
 from helpers.system_helper import open_image
-
+from store.states import GlobalState
 
 console = Console()
 
-def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_nodes: dict) -> None:
-    list_of_locations = sorted(malang_graph.keys())
+def find_route_destination() -> None:
+    list_of_locations = sorted(GlobalState.malang_graph.keys())
 
     console.print("\n[bold cyan]Select start and destination location[/bold cyan]")
     
-    start_location = questionary.select(
+    GlobalState.start_location = questionary.select(
         "Pilih lokasi awal:",
         choices=list_of_locations
     ).ask()
@@ -36,7 +36,7 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
         total_destionation = int(total_destionation)
         
         for i in range(total_destionation):
-            available_locations = [loc for loc in list_of_locations if loc != start_location and loc not in destination_location]
+            available_locations = [loc for loc in list_of_locations if loc != GlobalState.start_location and loc not in destination_location]
             if not available_locations:
                 console.print("[bold red]All locations have been selected![/bold red]")
                 break
@@ -51,17 +51,19 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
     else:
         destination_location = questionary.select(
             "Select destination:",
-            choices=[loc for loc in list_of_locations if loc != start_location]
+            choices=[loc for loc in list_of_locations if loc != GlobalState.start_location]
         ).ask()
-
     
+    # Set global state for destination locations
+    GlobalState.destination_location = destination_location
+
     max_operating_time = questionary.text(
-        "Berapa waktu maksimal operasional kendaraan (dalam menit)?",
+        "What's the maximum vehicle operation time (in minutes)?",
         validate=lambda text: text.isdigit() and int(text) > 0,
         default="120",
-        instruction="(default: 120 menit)"
+        instruction="(default: 120 minutes)"
     ).ask()
-    max_operating_time = int(max_operating_time)
+    GlobalState.max_operating_time = int(max_operating_time)
     
     algorithm_choice = questionary.select(
         "Select searching algorithm:",
@@ -69,7 +71,7 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
             "1. Breadth-First Search (BFS)",
             "2. Depth-First Search (DFS)",
             "3. Uniform Cost Search (UCS)",
-            "5. Depth-Limited Search (DLS)"
+            "4. Depth-Limited Search (DLS)"
         ]
     ).ask()
     
@@ -80,9 +82,9 @@ def find_route_destination(G: nx.MultiDiGraph, malang_graph: dict, location_node
     elif algorithm_choice == "2. Depth-First Search (DFS)":
         run_dfs()
     elif algorithm_choice == "3. Uniform Cost Search (UCS)":
-        run_ucs(G, malang_graph, location_nodes, start_location, destination_location, is_multi, show_process, max_operating_time)
-    elif algorithm_choice == "4. Depth-Limited Search":
-        run_dls()
+        run_ucs(show_process)
+    elif algorithm_choice == "4. Depth-Limited Search (DLS)":
+        run_dls(show_process)
 
 def visualize_graph_networkx(graph: dict) -> None:
     """
@@ -118,7 +120,7 @@ def visualize_graph_networkx(graph: dict) -> None:
         if not os.path.exists(IMG_DIR):
             os.makedirs(IMG_DIR)
         
-        filename = f"{IMG_DIR}/malang_graph.png"
+        filename = os.path.join(IMG_DIR, "malang_graph.png")
         plt.savefig(filename, dpi=300, bbox_inches='tight')
         console.print("[green]Graph has been saved to [bold]malang_graph.png[/bold][/green]")
         plt.close()

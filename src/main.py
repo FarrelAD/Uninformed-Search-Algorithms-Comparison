@@ -12,7 +12,7 @@ def main():
     """Main function to run the application"""
     show_banner('EXPEDITION ROUTE FINDER')
     
-    G, malang_graph, location_nodes = load_malang_osm_data()
+    load_malang_osm_data()
     
     while True:
         choice = questionary.select(
@@ -24,9 +24,9 @@ def main():
             ]).ask()
         
         if choice == "1. Find delivery route":
-            find_route_destination(G, malang_graph, location_nodes)
+            find_route_destination()
         elif choice == "2. View location graph":
-            visualize_graph_networkx(malang_graph)
+            visualize_graph_networkx()
         elif choice == "3. Exit":
             console.print("[bold green]Thanks for using this app![/bold green]")
             break
