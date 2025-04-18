@@ -9,6 +9,7 @@ from dfs.dfs import run_dfs
 from ucs.ucs import run_ucs
 from dls.dls import run_dls
 from config.config import IMG_DIR
+from helpers.system_helper import open_image
 
 
 console = Console()
@@ -116,10 +117,12 @@ def visualize_graph_networkx(graph: dict) -> None:
         
         if not os.path.exists(IMG_DIR):
             os.makedirs(IMG_DIR)
-            
-        plt.savefig(f"{IMG_DIR}/malang_graph.png", dpi=300, bbox_inches='tight')
+        
+        filename = f"{IMG_DIR}/malang_graph.png"
+        plt.savefig(filename, dpi=300, bbox_inches='tight')
         console.print("[green]Graf telah disimpan ke [bold]malang_graph.png[/bold][/green]")
         plt.close()
-    
+        
+        open_image(filename)
     except Exception as e:
         console.print(f"[red]Error saat membuat visualisasi graf: {str(e)}[/red]")
