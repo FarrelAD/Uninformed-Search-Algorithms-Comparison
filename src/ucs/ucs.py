@@ -10,32 +10,20 @@ from store.states import GlobalState
 console = Console()
 
 class UniformCostSearch:
-    def __init__(self, graph):
+    def __init__(self, graph: dict):
         """
-        Inisialisasi algoritma Uniform Cost Search.
-        
-        Args:
-            graph: Dictionary berisi graph dengan lokasi sebagai kunci dan daftar tetangga beserta bobot
+        Initialize the Uniform Cost Search with a graph.
         """
         self.graph = graph
     
-    def search(self, show_process: bool, start: str = None, goal: str = None) -> tuple[list[str], int, list]:
+    def search(self, start: str = None, goal: str = None) -> tuple[list[str], int, list]:
         """
-        Melakukan pencarian rute dari start ke goal menggunakan Uniform Cost Search.
-        
-        Args:
-            start: Lokasi awal
-            goal: Lokasi tujuan
-            show_process: Boolean, apakah menampilkan proses pencarian
-            
-        Returns:
-            Tuple (path, total_cost, visited_nodes) jika rute ditemukan, None jika tidak ada rute
+        Search route from start to goal using Uniform Cost Search algorithm.
         """
         start = start if start is not None else GlobalState.start_location
         goal = goal if goal is not None else GlobalState.destination_location
         
         # Format: (biaya_sejauh_ini, lokasi, path_sejauh_ini)
-        
         open_list = [(0, start, [start])]
         heapq.heapify(open_list)
         
@@ -45,7 +33,7 @@ class UniformCostSearch:
         
         step = 1
         
-        if show_process:
+        if GlobalState.show_process:
             console.print(Panel(f"[bold cyan]ILUSTRASI PROSES PENCARIAN UNIFORM COST SEARCH[/bold cyan]"))
             console.print(f"Mencari rute dari [green]{start}[/green] ke [green]{goal}[/green]...")
         
@@ -57,7 +45,7 @@ class UniformCostSearch:
             if current not in visited:
                 visited.append(current)
             
-            if show_process:
+            if GlobalState.show_process:
                 console.print(f"\n[bold]Langkah {step}:[/bold]")
                 console.print(f"  Mengunjungi lokasi: [cyan]{current}[/cyan]")
                 console.print(f"  Biaya sejauh ini: [yellow]{current_cost} (meter)[/yellow]")
@@ -67,7 +55,7 @@ class UniformCostSearch:
             
             # Jika sudah mencapai tujuan, kembalikan path dan biaya
             if current == goal:
-                if show_process:
+                if GlobalState.show_process:
                     console.print(Panel("[bold green]TUJUAN TERCAPAI![/bold green] Lokasi tujuan telah ditemukan."))
                 return path, current_cost, visited
             
@@ -84,7 +72,7 @@ class UniformCostSearch:
                         heapq.heappush(open_list, (new_cost, neighbor, new_path))
                         neighbors_info.append((neighbor, step_cost, new_cost))
                 
-                if show_process and neighbors_info:
+                if GlobalState.show_process and neighbors_info:
                     console.print("  Memeriksa tetangga:")
                     neighbors_info.sort(key=lambda x: x[2])
                     for neighbor, step_cost, new_cost in neighbors_info:
@@ -94,16 +82,16 @@ class UniformCostSearch:
                         next_location = neighbors_info[0][0]
                         console.print(f"  Tetangga dengan biaya terendah: [bold cyan]{next_location}[/bold cyan] ([yellow]{neighbors_info[0][2]}[/yellow] meter)")
                 
-                if show_process and not neighbors_info:
+                if GlobalState.show_process and not neighbors_info:
                     console.print(f"  [red]Tidak ada tetangga yang belum dikunjungi dari lokasi {current}.[/red]")
         
-        if show_process:
+        if GlobalState.show_process:
             console.print(Panel("[bold red]TIDAK ADA RUTE![/bold red] Tidak dapat menemukan rute ke tujuan."))
         return None
 
-    def search_multigoal(self, show_process: bool) -> tuple[list[str], int, list]:
+    def search_multigoal(self) -> tuple[list[str], int, list]:
         """
-        Melakukan pencarian rute dari start ke multiple goals menggunakan Uniform Cost Search secara berurutan.
+        Find the route from start to multiple goals using Uniform Cost Search sequentially.
         """
         current_location = GlobalState.start_locationt
         full_path = [GlobalState.start_location]
@@ -111,12 +99,12 @@ class UniformCostSearch:
         all_visited_nodes = []
         
         for i, goal in enumerate(GlobalState.destination_location):
-            if show_process:
+            if GlobalState.show_process:
                 console.print(f"\n[bold cyan]Pencarian tujuan ke-{i+1}: {goal}[/bold cyan]")
                 console.print(f"Dari lokasi saat ini: [green]{current_location}[/green]")
             
             # Cari rute ke tujuan berikutnya
-            result = self.search(current_location, goal, show_process)
+            result = self.search(current_location, goal)
             
             if result is None:
                 console.print(f"[bold red]Tidak dapat menemukan rute ke {goal} dari {current_location}[/bold red]")
@@ -125,7 +113,6 @@ class UniformCostSearch:
             path, cost, visited = result
             
             # Update informasi rute secara keseluruhan
-            # Tambahkan semua node kecuali node awal (karena sudah ada di full_path)
             full_path.extend(path[1:])
             total_cost += cost
             all_visited_nodes.extend(visited)
@@ -134,15 +121,15 @@ class UniformCostSearch:
         
         return full_path, total_cost, list(set(all_visited_nodes))  # Remove duplicate visited nodes
 
-def run_ucs(show_process: bool):
+def run_ucs():
     ucs = UniformCostSearch(GlobalState.malang_graph)
         
     start_time = time.time()
     
     if GlobalState.is_multi:
-        result = ucs.search_multigoal(show_process)
+        result = ucs.search_multigoal()
     else:
-        result = ucs.search(show_process)
+        result = ucs.search()
         
     end_time = time.time()
     time_computation = end_time - start_time

@@ -75,16 +75,16 @@ def find_route_destination() -> None:
         ]
     ).ask()
     
-    show_process = questionary.confirm("Do you want to see the illustration of the search process?").ask()
+    GlobalState.show_process = questionary.confirm("Do you want to see the illustration of the search process?").ask()
     
     if algorithm_choice == "1. Breadth-First Search (BFS)":
         run_bfs()
     elif algorithm_choice == "2. Depth-First Search (DFS)":
         run_dfs()
     elif algorithm_choice == "3. Uniform Cost Search (UCS)":
-        run_ucs(show_process)
+        run_ucs()
     elif algorithm_choice == "4. Depth-Limited Search (DLS)":
-        run_dls(show_process)
+        run_dls()
 
 def visualize_graph_networkx(graph: dict) -> None:
     """
