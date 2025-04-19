@@ -10,3 +10,4 @@ class GlobalState:
     destination_location: str|list = None
     max_operating_time: int = 0
     is_multi: bool = False
+    show_process: bool = False
