@@ -82,9 +82,9 @@ def find_route_destination() -> None:
     elif algorithm_choice == "2. Depth-First Search (DFS)":
         run_dfs()
     elif algorithm_choice == "3. Uniform Cost Search (UCS)":
-        run_ucs(show_process)
+        run_ucs()
     elif algorithm_choice == "4. Depth-Limited Search (DLS)":
-        run_dls(show_process)
+        run_dls()
 
 def visualize_graph_networkx(graph: dict) -> None:
     """
