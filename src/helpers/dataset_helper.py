@@ -2,6 +2,7 @@ import json
 import networkx as nx
 import os
 import osmnx as ox
+from pathlib import Path
 import pickle
 from rich.console import Console
 
@@ -10,15 +11,15 @@ from store.states import GlobalState
 
 console = Console()
 
-def save_osm_data(G: nx.MultiDiGraph, filename="malang_osm_data.pkl") -> None:
+def save_osm_data(G: nx.MultiDiGraph) -> None:
     """
     Save OpenStreetMap (OSM) data to a local file using pickle
     """
     try:
-        if not os.path.exists(DATA_DIR):
+        if not Path(DATA_DIR).exists():
             os.makedirs(DATA_DIR)
         
-        filepath = os.path.join(DATA_DIR, filename)
+        filepath = Path(DATA_DIR) / "malang_osm_data.pkl"
         
         with open(filepath, 'wb') as f:
             pickle.dump(G, f)
@@ -27,7 +28,7 @@ def save_osm_data(G: nx.MultiDiGraph, filename="malang_osm_data.pkl") -> None:
     except Exception as e:
         console.print(f"[red]Error saat menyimpan data OSM: {str(e)}[/red]")
 
-def get_location_coordinates(locations: list) -> dict | None:
+def get_location_coordinates(G: nx.MultiDiGraph, locations: list) -> dict | None:
     """
     Get the coordinates of a location using OSM Nominatim API
     """
@@ -36,16 +37,19 @@ def get_location_coordinates(locations: list) -> dict | None:
         for loc in locations:
             geolocator = ox.geocoder.geocode(loc)
             if geolocator:
+                node_id = ox.distance.nearest_nodes(G, X=geolocator[1], Y=geolocator[0])
                 location_coordinates.append({
                     "name": loc,
                     "latitude": geolocator[0],
                     "longitude": geolocator[1],
+                    "node_id": node_id,
                 })
             else:
                 location_coordinates.append({
                     "name": loc,
                     "latitude": None,
                     "longitude": None,
+                    "node_id": None,
                 })
         return location_coordinates
     except Exception as e:
@@ -82,38 +86,45 @@ def load_malang_osm_data() -> None:
         G = load_osm_data_online()
 
     try:
-        with open(os.path.join(DATA_DIR, "malang_locations.json"), 'r') as f:
-            important_locations = json.load(f)
+        with open(Path(DATA_DIR) / "malang_locations.json", 'r') as f:
+            malang_locations = json.load(f)
         
-        # Temukan node OSM terdekat untuk setiap lokasi penting
-        location_nodes = {}
-        for name, coords in important_locations.items():
-            nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0]) # use euclidean distance
-            location_nodes[name] = nearest_node
+        with open(Path(DATA_DIR) / "malang_graph.json", 'r') as f:
+            malang_graph = json.load(f)
         
         # Buat graph khusus dengan bobot jarak
         G_undirected = nx.Graph(G)
-        graph_dict = {}
-        for name, node_id in location_nodes.items():
-            graph_dict[name] = []
+        new_graph = []
+        for index, loc in enumerate(malang_locations):
+            new_graph.append({
+                "node": loc["name"],
+                "branch": []
+            })
+
+            branch = next((node["branch"] for node in malang_graph if node["node"] == loc["name"]), None)
             
-            # Cari jalur ke semua lokasi lain
-            for other_name, other_node_id in location_nodes.items():
-                if name != other_name:
-                    try:
-                        route = nx.shortest_path(G_undirected, node_id, other_node_id, weight='length')
-                        
-                        distance = sum(G_undirected[u][v]['length'] for u, v in zip(route[:-1], route[1:]))
-                        
-                        graph_dict[name].append((other_name, distance))
-                    except nx.NetworkXNoPath:
-                        console.print(f"[yellow]Tidak ada jalur dari {name} ke {other_name}[/yellow]")
-                    except Exception as e:
-                        console.print(f"[yellow]Error mencari jalur dari {name} ke {other_name}: {str(e)}[/yellow]")
+            if not branch:
+                continue
+            
+            for node in branch:
+                try:
+                    branch_node_id = next((n["node_id"] for n in malang_locations if n["name"] == node["node"]), None)
+                    route = nx.shortest_path(G_undirected, loc["node_id"], branch_node_id, weight='length')
+                    distance = sum(G_undirected[u][v]['length'] for u, v in zip(route[:-1], route[1:]))
+                    new_graph[index]["branch"].append({
+                        "node": node["node"], 
+                        "distance": distance
+                    })
+                except nx.NetworkXNoPath:
+                    console.print(f"[yellow]Tidak ada jalur dari {loc["name"]} ke {node["node"]}[/yellow]")
+                except Exception as e:
+                    console.print(f"[yellow]Error mencari jalur dari {loc["name"]} ke {node["node"]}: {str(e)}[/yellow]")
+        
+        with open(Path(DATA_DIR) / "malang_graph.json", 'w') as f:
+            json.dump(new_graph, f, indent=4)
         
         GlobalState.G = G
-        GlobalState.malang_graph = graph_dict
-        GlobalState.location_nodes = location_nodes
+        GlobalState.malang_graph = new_graph
     except Exception as e:
         console.print(f"[yellow]Error saat memproses data OSM dari cache: {str(e)}. Mencoba memuat ulang dari OSM...[/yellow]")
 
@@ -146,9 +157,9 @@ def load_osm_data_online() -> nx.MultiDiGraph | None:
             "Kampus UMM, Malang, Indonesia"
         ]
         
-        locations_coordinate = get_location_coordinates(locations)
+        locations_coordinate = get_location_coordinates(G, locations)
         
-        with open(os.path.join(DATA_DIR, "malang_locations.json"), 'w') as f:
+        with open(Path(DATA_DIR) / "malang_locations.json", 'w') as f:
             json.dump(locations_coordinate, f, indent=4)
 
         if not 'length' in list(G.edges(data=True))[0][2]:

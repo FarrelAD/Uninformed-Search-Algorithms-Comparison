@@ -101,15 +101,24 @@ def visualize_graph_networkx() -> None:
         
         G = nx.Graph()
         
-        with open(os.path.join(DATA_DIR, "malang_locations.json"), "r") as f:
+        with open(Path(DATA_DIR, "malang_locations.json"), "r") as f:
             locations = json.load(f)
             
         for i in range(len(locations)):
             loc = locations[i]
             G.add_node(loc['name'], pos=(loc['longitude'], loc['latitude']))
+        
+        with open(Path(DATA_DIR) / "malang_graph.json", "r") as f:
+            malang_graph = json.load(f)
+        
+        for loc in malang_graph:
+            branch = next((node["branch"] for node in malang_graph if node["node"] == loc["node"]), None)
             
-        for i in range(len(locations) - 1):
-            G.add_edge(locations[i]['name'], locations[i + 1]['name'])
+            if not branch:
+                continue
+            
+            for node in branch:
+                G.add_edge(loc["node"], node["node"], distance=node["distance"])
 
         plt.figure(figsize=(20, 20))
         pos = nx.get_node_attributes(G, 'pos')
@@ -122,6 +131,9 @@ def visualize_graph_networkx() -> None:
             edge_color='orange', 
             width=2
         )
+        
+        edge_labels = {(u, v): f"{d['distance']:.0f}m" for u, v, d in G.edges(data=True)}
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=6)
 
         plt.title("Graph Visualization of Malang Locations", fontsize=16)
         plt.xlabel("Longitude")
