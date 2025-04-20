@@ -8,39 +8,60 @@ from store.states import GlobalState
 
 console = Console()
 
-def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[str], int, list[str]]:
+def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[str], float, int]:
+    """
+    Run single destination search
+    """
     start = start if start is not None else GlobalState.start_location
     goal = goal if goal is not None else GlobalState.destination_location
     
     if GlobalState.show_process:
-        console.print(Panel(f"[bold cyan]ILUSTRASI PROSES PENCARIAN DEPTH-LIMITED SEARCH[/bold cyan]"))
+        console.print(Panel(f"[bold cyan]ILLUSTRATION OF SEARCH PROCESS DEPTH-LIMITED SEARCH[/bold cyan]"))
         console.print(f"Mencari rute dari [green]{start}[/green] ke [green]{goal}[/green]...")
 
     current_depth = 0
     path = []
+    visited = 0
     
     tree = next((node for node in GlobalState.malang_graph if node["node"] == start), None)
     
     is_found = False
     
-    def go_deep(tree: dict, depth: int) -> None:
-        nonlocal is_found, path
+    def go_deep(tree: dict, depth: int, prev_node: str = None, distance: float = 0) -> None:
+        """
+        Recursion function to get the correct path
+        """
+        nonlocal is_found, path, visited
         
         depth += 1
-        path.append(tree["node"])
+        path.append({
+            "name": tree["node"],
+            "distance": distance,
+        })
+        visited += 1
         
-        if depth == max_depth:
-            print("Depth limit reached!")
-            return
+        if is_found:
+            return True
         
-        for n in tree["branch"]:
-            if n["node"] == goal:
-                is_found = True
-                path.append(n["node"])
-                break
-            else:
-                tree = next((node for node in GlobalState.malang_graph if node["node"] == n["node"]), None)
-                go_deep(tree, depth)
+        if depth > max_depth:
+            path.pop()
+            return False
+        
+        if tree["node"] == goal:
+            is_found = True
+            return True
+        
+        branch = [n for n in tree["branch"] if n["node"] != prev_node]
+        for n in branch:
+            prev_node = tree["node"]
+            distance = n["distance"]
+            tree = next((node for node in GlobalState.malang_graph if node["node"] == n["node"]), None)
+            result = go_deep(tree, depth, prev_node, distance)
+            
+            if result:
+                return True
+        
+        return False
     
     go_deep(tree, current_depth)
     
@@ -49,12 +70,31 @@ def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[st
     else:
         print("Goal not found!")
     
-    print(f"Path: {path}")
+    total_distance = sum([p["distance"] for p in path]) if is_found else 0
+    all_path = [p["name"] for p in path] if is_found else ["Not found"]
     
-    return [], 0, []
+    return all_path, total_distance, visited
 
-def search_multigoal(max_depth: int) -> tuple[list[str], int, list[str]]:
-    pass
+def search_multigoal(max_depth: int) -> list[tuple[list[str], float, int]]:
+    """
+    Run multigoal/destination search
+    """
+    result = []
+    
+    start = GlobalState.start_location
+    iteration = 0
+    while len(GlobalState.destination_location) > 0:
+        iteration += 1 
+        destination = GlobalState.destination_location.pop(0)
+        
+        if GlobalState.show_process:
+            console.print(f"\n[bold cyan]Searching for destination number-{iteration}: {destination}[/bold cyan]")
+            console.print(f"From: [green]{start}[/green]")
+        
+        result.append(search(max_depth, start, destination))
+        start = destination
+    
+    return result
 
 
 def run_dls() -> None:
@@ -63,8 +103,7 @@ def run_dls() -> None:
     """
     max_depth = questionary.text(
         "How many max depth do you want to search?",
-        validate=lambda text: text.isdigit() and 1 <= int(text) <= 5,
-        instruction="Enter the number of destination (1-5): "
+        validate=lambda text: text.isdigit() and int(text) > 1,
     ).ask()
     max_depth = int(max_depth)
     
@@ -78,7 +117,7 @@ def run_dls() -> None:
     end_time = time.time()
     time_computation = end_time - start_time
     
-    show_result(result, time_computation)
+    show_result("DLS", result, time_computation)
     
     if result:
         _, cost, _ = result
