@@ -91,7 +91,7 @@ def visualize_route(route: list) -> None:
     except Exception as e:
         console.print(f"[red]Error saat membuat visualisasi: {str(e)}[/red]")
 
-def show_result(method: str, result: tuple[list[str], float, int], time_computation: float) -> None:
+def show_result(method: str, result: tuple[list[str], float, int] | list[tuple[list[str], float, int]], time_computation: float) -> None:
     """
     Show the result of the search in a table format.
     """
@@ -102,7 +102,6 @@ def show_result(method: str, result: tuple[list[str], float, int], time_computat
             console.print(Panel(f"[bold red]Tidak ada rute yang ditemukan dari {GlobalState.start_location} ke {GlobalState.destination_location}.[/bold red]"))
         return
     
-    path, cost, visited = result
     
     table = Table(title=f"Results of Route Search with {method}")
     table.add_column("Info", style="cyan")
@@ -111,14 +110,27 @@ def show_result(method: str, result: tuple[list[str], float, int], time_computat
     table.add_row("From", GlobalState.start_location)
     
     if GlobalState.is_multi:
-        table.add_row("To (Multi-Goal)", ", ".join(GlobalState.destination_location))
-    else:
-        table.add_row("To", GlobalState.destination_location)
+        table.add_row("To (Multi-Goal)", "".join(f"- {d.replace(", Batu, Indonesia", "").replace(", Malang, Indonesia", "").strip()}\n" for d in GlobalState.destination_location))
         
-    table.add_row("Route", "".join(f"- {p.replace(", Batu, Indonesia", "").replace(", Malang, Indonesia", "").strip()}\n" for p in path))
-    table.add_row("Total distance", f"{cost:.2f} meter")
-    table.add_row("Time estimation", f"{cost/833.33:.2f} minutes")  # Assume speed is 50 km/h (833.33 m/minutes)
-    table.add_row("Visited node", str(visited))
+        sum_distance = 0
+        total_visited = 0
+        for i, r in enumerate(result):
+            path, distance, visited = r
+            sum_distance += distance
+            total_visited += visited
+            table.add_row(f"Route-{i}", "".join(f"- {p.replace(", Batu, Indonesia", "").replace(", Malang, Indonesia", "").strip()}\n" for p in path))
+        
+        table.add_row("Total distance", f"{sum_distance:.2f} meter")
+        table.add_row("Time estimation", f"{sum_distance/833.33:.2f} minutes")  # Assume speed is 50 km/h (833.33 m/minutes)
+        table.add_row("Visited node", str(total_visited))
+    else:
+        path, distance, visited = result
+        table.add_row("To", GlobalState.destination_location)
+        table.add_row("Route", "".join(f"- {p.replace(", Batu, Indonesia", "").replace(", Malang, Indonesia", "").strip()}\n" for p in path))
+        table.add_row("Total distance", f"{distance:.2f} meter")
+        table.add_row("Time estimation", f"{distance/833.33:.2f} minutes")  # Assume speed is 50 km/h (833.33 m/minutes)
+        table.add_row("Visited node", str(visited))
+    
     table.add_row("Time computation", f"{time_computation:.4f} seconds")
     
     console.print(table)
