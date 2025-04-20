@@ -91,7 +91,7 @@ def visualize_route(route: list) -> None:
     except Exception as e:
         console.print(f"[red]Error saat membuat visualisasi: {str(e)}[/red]")
 
-def show_result(result: tuple[list, int, list], time_computation: float) -> None:
+def show_result(method: str, result: tuple[list, int, list], time_computation: float) -> None:
     """
     Show the result of the search in a table format.
     """
@@ -104,21 +104,21 @@ def show_result(result: tuple[list, int, list], time_computation: float) -> None
     
     path, cost, visited_nodes = result
     
-    table = Table(title=f"Hasil Pencarian Rute dengan UCS")
-    table.add_column("Informasi", style="cyan")
+    table = Table(title=f"Hasil Pencarian Rute dengan {method}")
+    table.add_column("Info", style="cyan")
     table.add_column("Detail", style="green")
     
-    table.add_row("Dari", GlobalState.start_location)
+    table.add_row("From", GlobalState.start_location)
     
     if GlobalState.is_multi:
-        table.add_row("Ke (Multi-Goal)", ", ".join(GlobalState.destination_location))
+        table.add_row("To (Multi-Goal)", ", ".join(GlobalState.destination_location))
     else:
-        table.add_row("Ke", GlobalState.destination_location)
+        table.add_row("To", GlobalState.destination_location)
         
-    table.add_row("Rute", " -> ".join(path))
-    table.add_row("Total jarak", f"{cost:.2f} meter")
-    table.add_row("Estimasi waktu", f"{cost/833.33:.2f} menit")  # Assume speed is 50 km/h (833.33 m/minutes)
-    table.add_row("Node dikunjungi", str(len(visited_nodes)))
-    table.add_row("Waktu komputasi", f"{time_computation:.4f} detik")
+    table.add_row("Route", " -> ".join(path))
+    table.add_row("Total distance", f"{cost:.2f} meter")
+    table.add_row("Time estimation", f"{cost/833.33:.2f} menit")  # Assume speed is 50 km/h (833.33 m/minutes)
+    table.add_row("Visited node", str(len(visited_nodes)))
+    table.add_row("Time computation", f"{time_computation:.4f} detik")
     
     console.print(table)

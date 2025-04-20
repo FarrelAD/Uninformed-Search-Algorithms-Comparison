@@ -18,29 +18,45 @@ def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[st
 
     current_depth = 0
     path = []
+    visited = []
     
     tree = next((node for node in GlobalState.malang_graph if node["node"] == start), None)
     
     is_found = False
     
-    def go_deep(tree: dict, depth: int) -> None:
+    def go_deep(tree: dict, depth: int, prev_node: str = None, distance: float = 0) -> None:
         nonlocal is_found, path
         
         depth += 1
-        path.append(tree["node"])
+        path.append({
+            "name": tree["node"],
+            "distance": distance,
+        })
+        visited.append(tree["node"])
+        
+        if is_found:
+            return True
+        
+        if tree["node"] == goal:
+            is_found = True
+            return True
         
         if depth == max_depth:
             print("Depth limit reached!")
-            return
+            path.pop()
+            return False
         
-        for n in tree["branch"]:
-            if n["node"] == goal:
-                is_found = True
-                path.append(n["node"])
-                break
-            else:
-                tree = next((node for node in GlobalState.malang_graph if node["node"] == n["node"]), None)
-                go_deep(tree, depth)
+        branch = [n for n in tree["branch"] if n["node"] != prev_node]
+        for n in branch:
+            prev_node = tree["node"]
+            distance = n["distance"]
+            tree = next((node for node in GlobalState.malang_graph if node["node"] == n["node"]), None)
+            result = go_deep(tree, depth, prev_node, distance)
+            
+            if result:
+                return True
+        
+        return False
     
     go_deep(tree, current_depth)
     
@@ -49,9 +65,10 @@ def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[st
     else:
         print("Goal not found!")
     
-    print(f"Path: {path}")
+    total_distance = sum([p["distance"] for p in path])
+    all_path = [p["name"] for p in path]
     
-    return [], 0, []
+    return all_path, total_distance, visited
 
 def search_multigoal(max_depth: int) -> tuple[list[str], int, list[str]]:
     pass
@@ -63,8 +80,7 @@ def run_dls() -> None:
     """
     max_depth = questionary.text(
         "How many max depth do you want to search?",
-        validate=lambda text: text.isdigit() and 1 <= int(text) <= 5,
-        instruction="Enter the number of destination (1-5): "
+        validate=lambda text: text.isdigit() and int(text) > 1,
     ).ask()
     max_depth = int(max_depth)
     
@@ -78,7 +94,7 @@ def run_dls() -> None:
     end_time = time.time()
     time_computation = end_time - start_time
     
-    show_result(result, time_computation)
+    show_result("DLS", result, time_computation)
     
     if result:
         _, cost, _ = result
