@@ -1,22 +1,102 @@
-{
-    "Alun-Alun Malang": [ -7.98257591359655, 112.63083605758665 ],
-    "Stasiun Malang": [ -7.9774749964070955, 112.63709003384328 ],
-    "Mall Olympic Garden": [ -7.977295425021915, 112.62336152202812 ],
-    "Universitas Brawijaya": [ -7.952433123028591, 112.61366090667804 ],
-    "Universitas Negeri Malang": [ -7.960454611540874, 112.6177189695484 ],
-    "RS Saiful Anwar": [ -7.972170847388765, 112.63142093369304 ],
-    "Balai Kota Malang": [ -7.977947500050584, 112.63389482202724 ],
-    "Terminal Arjosari": [ -7.933836610071868, 112.65858977532245 ],
-    "Stadion Kanjuruhan": [ -8.150170016661704, 112.5739884932773 ],
-    "Jatim Park 1": [ -7.884423162372764, 112.52487842984884 ],
-    "Jatim Park 2": [ -7.888010372687575, 112.52939936061937 ],
-    "Museum Angkut": [ -7.8786177039255225, 112.5199907931799 ],
-    "Alun-Alun Batu": [ -7.871142427763784, 112.52693276435244 ],
-    "Selecta": [ -7.818245869977062, 112.52530983598959 ],
-    "Kampung Wisata Jodipan": [ -7.982795650777767, 112.63724399316334 ],
-    "Taman Rekreasi Sengkaling": [ -7.9153415935389475, 112.58892499318803 ],
-    "Pasar Besar Malang": [ -7.986232475226877, 112.63344850668207 ],
-    "Tugu Malang": [ -7.97714572502704, 112.63407989317501 ],
-    "Coban Rondo": [ -7.884972745207038, 112.47735655085881 ],
-    "Kampus III UMM": [ -7.921580658766362, 112.59727370478942 ]
-}
+[
+    {
+        "name": "Alun-Alun Malang, Malang, Indonesia",
+        "latitude": -7.9826135,
+        "longitude": 112.6308234
+    },
+    {
+        "name": "Stasiun Malang Kota Baru, Malang, Indonesia",
+        "latitude": -7.9775064,
+        "longitude": 112.6370268
+    },
+    {
+        "name": "Mall Olympic Garden, Malang, Indonesia",
+        "latitude": -7.9769421,
+        "longitude": 112.6238683
+    },
+    {
+        "name": "Universitas Brawijaya, Malang, Indonesia",
+        "latitude": -7.9517799,
+        "longitude": 112.6138632
+    },
+    {
+        "name": "Universitas Negeri Malang, Malang, Indonesia",
+        "latitude": -7.9614738,
+        "longitude": 112.6178723
+    },
+    {
+        "name": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+        "latitude": -7.9721811,
+        "longitude": 112.6313663
+    },
+    {
+        "name": "Balai Kota Malang, Malang, Indonesia",
+        "latitude": -7.9781344,
+        "longitude": 112.6339005
+    },
+    {
+        "name": "Terminal Arjosari, Malang, Indonesia",
+        "latitude": -7.9345822,
+        "longitude": 112.6585157
+    },
+    {
+        "name": "Stadion Kanjuruhan, Malang, Indonesia",
+        "latitude": -8.1503726,
+        "longitude": 112.5739674
+    },
+    {
+        "name": "Jawa Timur Park 1, Batu, Indonesia",
+        "latitude": -7.884246,
+        "longitude": 112.5246991
+    },
+    {
+        "name": "Jawa Timur Park 2, Batu, Indonesia",
+        "latitude": -7.8889925,
+        "longitude": 112.528153
+    },
+    {
+        "name": "Museum Angkut, Batu, Indonesia",
+        "latitude": -7.878829,
+        "longitude": 112.5201389
+    },
+    {
+        "name": "Alun-Alun Batu, Batu, Indonesia",
+        "latitude": -7.871184,
+        "longitude": 112.5268983
+    },
+    {
+        "name": "Taman Rekreasi Selecta, Batu, Indonesia",
+        "latitude": -7.8185801,
+        "longitude": 112.5258882
+    },
+    {
+        "name": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
+        "latitude": -7.9831221,
+        "longitude": 112.6378633
+    },
+    {
+        "name": "Taman Rekreasi Sengkaling, Malang, Indonesia",
+        "latitude": -7.9148872,
+        "longitude": 112.5886413
+    },
+    {
+        "name": "Pasar Besar Malang, Malang, Indonesia",
+        "latitude": -7.9864086,
+        "longitude": 112.6332628
+    },
+    {
+        "name": "Paralayang, Batu, Indonesia",
+        "latitude": -7.8549947,
+        "longitude": 112.4967
+    },
+    {
+        "name": "Coban Rondo, Batu, Indonesia",
+        "latitude": -7.8622021,
+        "longitude": 112.4816061
+    },
+    {
+        "name": "Kampus UMM, Malang, Indonesia",
+        "latitude": -7.923633,
+        "longitude": 112.600217
+    }
+]

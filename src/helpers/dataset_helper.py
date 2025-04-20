@@ -27,6 +27,31 @@ def save_osm_data(G: nx.MultiDiGraph, filename="malang_osm_data.pkl") -> None:
     except Exception as e:
         console.print(f"[red]Error saat menyimpan data OSM: {str(e)}[/red]")
 
+def get_location_coordinates(locations: list) -> dict | None:
+    """
+    Get the coordinates of a location using OSM Nominatim API
+    """
+    try:
+        location_coordinates = []
+        for loc in locations:
+            geolocator = ox.geocoder.geocode(loc)
+            if geolocator:
+                location_coordinates.append({
+                    "name": loc,
+                    "latitude": geolocator[0],
+                    "longitude": geolocator[1],
+                })
+            else:
+                location_coordinates.append({
+                    "name": loc,
+                    "latitude": None,
+                    "longitude": None,
+                })
+        return location_coordinates
+    except Exception as e:
+        console.print(f"[red]Error occurred while getting location coordinates: {str(e)}[/red]")
+        return None
+
 def load_osm_data_from_file(filename="malang_osm_data.pkl") -> nx.MultiDiGraph | None:
     """
     Load OpenStreetMap (OSM) data from a local file using pickle
@@ -63,7 +88,7 @@ def load_malang_osm_data() -> None:
         # Temukan node OSM terdekat untuk setiap lokasi penting
         location_nodes = {}
         for name, coords in important_locations.items():
-            nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0])
+            nearest_node = ox.distance.nearest_nodes(G, X=coords[1], Y=coords[0]) # use euclidean distance
             location_nodes[name] = nearest_node
         
         # Buat graph khusus dengan bobot jarak
@@ -83,12 +108,8 @@ def load_malang_osm_data() -> None:
                         graph_dict[name].append((other_name, distance))
                     except nx.NetworkXNoPath:
                         console.print(f"[yellow]Tidak ada jalur dari {name} ke {other_name}[/yellow]")
-                        pass
                     except Exception as e:
                         console.print(f"[yellow]Error mencari jalur dari {name} ke {other_name}: {str(e)}[/yellow]")
-                        pass
-        
-        console.print("[green]Data OSM berhasil dimuat dari cache lokal![/green]")
         
         GlobalState.G = G
         GlobalState.malang_graph = graph_dict
@@ -98,130 +119,45 @@ def load_malang_osm_data() -> None:
 
 def load_osm_data_online() -> nx.MultiDiGraph | None:
     try:
-        console.print("[yellow]Memuat data OSM untuk Malang Raya dari internet...[/yellow]")
+        console.print("[yellow]Load OSM data from the internet...[/yellow]")
         
         G = ox.graph_from_place("Malang, East Java, Indonesia", network_type="drive", simplify=True)
         
+        locations = [
+            "Alun-Alun Malang, Malang, Indonesia",
+            "Stasiun Malang Kota Baru, Malang, Indonesia",
+            "Mall Olympic Garden, Malang, Indonesia",
+            "Universitas Brawijaya, Malang, Indonesia",
+            "Universitas Negeri Malang, Malang, Indonesia",
+            "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+            "Balai Kota Malang, Malang, Indonesia",
+            "Terminal Arjosari, Malang, Indonesia",
+            "Stadion Kanjuruhan, Malang, Indonesia",
+            "Jawa Timur Park 1, Batu, Indonesia",
+            "Jawa Timur Park 2, Batu, Indonesia",
+            "Museum Angkut, Batu, Indonesia",
+            "Alun-Alun Batu, Batu, Indonesia",
+            "Taman Rekreasi Selecta, Batu, Indonesia",
+            "Kampung Warna-Warni Jodipan, Malang, Indonesia",
+            "Taman Rekreasi Sengkaling, Malang, Indonesia",
+            "Pasar Besar Malang, Malang, Indonesia",
+            "Paralayang, Batu, Indonesia",
+            "Coban Rondo, Batu, Indonesia",
+            "Kampus UMM, Malang, Indonesia"
+        ]
+        
+        locations_coordinate = get_location_coordinates(locations)
+        
+        with open(os.path.join(DATA_DIR, "malang_locations.json"), 'w') as f:
+            json.dump(locations_coordinate, f, indent=4)
+
         if not 'length' in list(G.edges(data=True))[0][2]:
             G = ox.add_edge_lengths(G)
         
         save_osm_data(G)
         
-        console.print("[green]Data OSM berhasil dimuat dari internet![/green]")
+        console.print("[green]OSM data loaded successfully from the internet![/green]")
         return G
     except Exception as e:
-        console.print(f"[bold red]Error saat memuat data OSM: {str(e)}[/bold red]")
+        console.print(f"[bold red]Error occurred while loading OSM data from the internet: {str(e)}[/bold red]")
         return None
-    
-def get_static_data() -> dict:
-    """
-    Data statis sebagai fallback jika tidak bisa memuat dari OSM
-    """
-    # Representasi graph lokasi-lokasi di Malang Raya
-    # Format: {lokasi: [(tetangga1, jarak1), (tetangga2, jarak2), ...]}
-    malang_raya = {
-        "Alun-Alun Malang": [
-            ("Stasiun Malang", 800), 
-            ("Mall Olympic Garden", 600), 
-            ("Balai Kota Malang", 500),
-            ("Pasar Besar Malang", 400)
-        ],
-        "Stasiun Malang": [
-            ("Alun-Alun Malang", 800), 
-            ("Tugu Malang", 500), 
-            ("Kampung Wisata Jodipan", 900)
-        ],
-        "Mall Olympic Garden": [
-            ("Alun-Alun Malang", 600), 
-            ("RS Saiful Anwar", 1200), 
-            ("Balai Kota Malang", 700)
-        ],
-        "Universitas Brawijaya": [
-            ("Universitas Negeri Malang", 1500), 
-            ("Tugu Malang", 2500), 
-            ("Balai Kota Malang", 3000)
-        ],
-        "Universitas Negeri Malang": [
-            ("Universitas Brawijaya", 1500), 
-            ("RS Saiful Anwar", 2000)
-        ],
-        "RS Saiful Anwar": [
-            ("Mall Olympic Garden", 1200), 
-            ("Universitas Negeri Malang", 2000), 
-            ("Kampung Wisata Jodipan", 1800)
-        ],
-        "Balai Kota Malang": [
-            ("Alun-Alun Malang", 500), 
-            ("Mall Olympic Garden", 700), 
-            ("Tugu Malang", 800), 
-            ("Universitas Brawijaya", 3000)
-        ],
-        "Terminal Arjosari": [
-            ("Tugu Malang", 4500), 
-            ("Kampus UMM", 5000), 
-            ("Taman Rekreasi Sengkaling", 6000)
-        ],
-        "Stadion Kanjuruhan": [
-            ("Pasar Besar Malang", 7000), 
-            ("Alun-Alun Malang", 7500)
-        ],
-        "Jatim Park 1": [
-            ("Jatim Park 2", 500), 
-            ("Museum Angkut", 1500), 
-            ("Alun-Alun Batu", 2000)
-        ],
-        "Jatim Park 2": [
-            ("Jatim Park 1", 500), 
-            ("Museum Angkut", 1200), 
-            ("Selecta", 6000)
-        ],
-        "Museum Angkut": [
-            ("Jatim Park 1", 1500), 
-            ("Jatim Park 2", 1200), 
-            ("Alun-Alun Batu", 1500), 
-            ("Selecta", 5500)
-        ],
-        "Alun-Alun Batu": [
-            ("Jatim Park 1", 2000), 
-            ("Museum Angkut", 1500), 
-            ("Selecta", 5000), 
-            ("Coban Rondo", 7000)
-        ],
-        "Selecta": [
-            ("Jatim Park 2", 6000), 
-            ("Museum Angkut", 5500), 
-            ("Alun-Alun Batu", 5000), 
-            ("Coban Rondo", 8000)
-        ],
-        "Kampung Wisata Jodipan": [
-            ("Stasiun Malang", 900), 
-            ("RS Saiful Anwar", 1800), 
-            ("Pasar Besar Malang", 800)
-        ],
-        "Taman Rekreasi Sengkaling": [
-            ("Terminal Arjosari", 6000), 
-            ("Kampus UMM", 1200)
-        ],
-        "Pasar Besar Malang": [
-            ("Alun-Alun Malang", 400), 
-            ("Kampung Wisata Jodipan", 800), 
-            ("Stadion Kanjuruhan", 7000)
-        ],
-        "Tugu Malang": [
-            ("Stasiun Malang", 500), 
-            ("Balai Kota Malang", 800), 
-            ("Terminal Arjosari", 4500), 
-            ("Universitas Brawijaya", 2500)
-        ],
-        "Coban Rondo": [
-            ("Alun-Alun Batu", 7000), 
-            ("Selecta", 8000)
-        ],
-        "Kampus UMM": [
-            ("Terminal Arjosari", 5000), 
-            ("Taman Rekreasi Sengkaling", 1200)
-        ]
-    }
-    
-    console.print("[yellow]Menggunakan data statis untuk demonstrasi.[/yellow]")
-    return malang_raya
