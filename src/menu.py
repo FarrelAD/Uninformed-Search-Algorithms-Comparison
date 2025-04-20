@@ -1,6 +1,8 @@
+import json
 import matplotlib.pyplot as plt
 import networkx as nx
 import os
+from pathlib import Path
 from rich.console import Console
 import questionary
 
@@ -8,7 +10,7 @@ from bfs.bfs import run_bfs
 from dfs.dfs import run_dfs
 from ucs.ucs import run_ucs
 from dls.dls import run_dls
-from config.config import IMG_DIR
+from config.config import IMG_DIR, DATA_DIR
 from helpers.system_helper import open_image
 from store.states import GlobalState
 
@@ -86,45 +88,62 @@ def find_route_destination() -> None:
     elif algorithm_choice == "4. Depth-Limited Search (DLS)":
         run_dls()
 
-def visualize_graph_networkx(graph: dict) -> None:
+def visualize_graph_networkx() -> None:
     """
     Visualization of the graph using NetworkX and Matplotlib. Saves the graph as an image file.
-    Args:
-        graph (dict): The graph data structure with locations and their connections.
     """
     
     console.print("\n[bold cyan]Visualization of Location Graph[/bold cyan]")
     
     try:
+        if not Path(IMG_DIR).exists():
+            os.makedirs(DATA_DIR)
+        
         G = nx.Graph()
         
-        for source, destinations in graph.items():
-            for dest, weight in destinations:
-                G.add_edge(source, dest, weight=weight)
+        with open(Path(DATA_DIR, "malang_locations.json"), "r") as f:
+            locations = json.load(f)
+            
+        for i in range(len(locations)):
+            loc = locations[i]
+            G.add_node(loc['name'], pos=(loc['longitude'], loc['latitude']))
         
-        pos = nx.spring_layout(G, seed=42)
+        with open(Path(DATA_DIR) / "malang_graph.json", "r") as f:
+            malang_graph = json.load(f)
         
-        plt.figure(figsize=(12, 10))
-        plt.title("Graph Data Structure of Malang Raya Locations")
+        for loc in malang_graph:
+            branch = next((node["branch"] for node in malang_graph if node["node"] == loc["node"]), None)
+            
+            if not branch:
+                continue
+            
+            for node in branch:
+                G.add_edge(loc["node"], node["node"], distance=node["distance"])
+
+        plt.figure(figsize=(20, 20))
+        pos = nx.get_node_attributes(G, 'pos')
+        nx.draw(
+            G, pos, 
+            with_labels=True,
+            node_size=1200, 
+            node_color='skyblue', 
+            font_size=9, 
+            edge_color='orange', 
+            width=2
+        )
         
-        nx.draw_networkx_nodes(G, pos, node_size=700, node_color='lightblue')
-        nx.draw_networkx_edges(G, pos, width=1, alpha=0.7)
-        nx.draw_networkx_labels(G, pos, font_size=8)
-        
-        edge_labels = {(u, v): f"{d['weight']:.0f}m" for u, v, d in G.edges(data=True)}
+        edge_labels = {(u, v): f"{d['distance']:.0f}m" for u, v, d in G.edges(data=True)}
         nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=6)
+
+        plt.title("Graph Visualization of Malang Locations", fontsize=16)
+        plt.xlabel("Longitude")
+        plt.ylabel("Latitude")
+        plt.grid(True)
         
-        plt.axis('off')
-        plt.tight_layout()
-        
-        if not os.path.exists(IMG_DIR):
-            os.makedirs(IMG_DIR)
-        
-        filename = os.path.join(IMG_DIR, "malang_graph.png")
+        filename = Path(IMG_DIR) / "malang_graph.png"
         plt.savefig(filename, dpi=300, bbox_inches='tight')
-        console.print("[green]Graph has been saved to [bold]malang_graph.png[/bold][/green]")
-        plt.close()
         
+        console.print("[green]Graph has been saved to [bold]malang_graph.png[/bold][/green]")
         open_image(filename)
     except Exception as e:
         console.print(f"[red]Error occurred while creating graph visualization: {str(e)}[/red]")
