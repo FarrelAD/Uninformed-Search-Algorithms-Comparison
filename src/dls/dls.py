@@ -9,11 +9,14 @@ from store.states import GlobalState
 console = Console()
 
 def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[str], float, int]:
+    """
+    Run single destination search
+    """
     start = start if start is not None else GlobalState.start_location
     goal = goal if goal is not None else GlobalState.destination_location
     
     if GlobalState.show_process:
-        console.print(Panel(f"[bold cyan]ILUSTRASI PROSES PENCARIAN DEPTH-LIMITED SEARCH[/bold cyan]"))
+        console.print(Panel(f"[bold cyan]ILLUSTRATION OF SEARCH PROCESS DEPTH-LIMITED SEARCH[/bold cyan]"))
         console.print(f"Mencari rute dari [green]{start}[/green] ke [green]{goal}[/green]...")
 
     current_depth = 0
@@ -72,8 +75,26 @@ def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[st
     
     return all_path, total_distance, visited
 
-def search_multigoal(max_depth: int) -> tuple[list[str], int, list[str]]:
-    pass
+def search_multigoal(max_depth: int) -> list[tuple[list[str], float, int]]:
+    """
+    Run multigoal/destination search
+    """
+    result = []
+    
+    start = GlobalState.start_location
+    iteration = 0
+    while len(GlobalState.destination_location) > 0:
+        iteration += 1 
+        destination = GlobalState.destination_location.pop(0)
+        
+        if GlobalState.show_process:
+            console.print(f"\n[bold cyan]Searching for destination number-{iteration}: {destination}[/bold cyan]")
+            console.print(f"From: [green]{start}[/green]")
+        
+        result.append(search(max_depth, start, destination))
+        start = destination
+    
+    return result
 
 
 def run_dls() -> None:
