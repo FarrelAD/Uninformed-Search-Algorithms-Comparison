@@ -1,226 +1,212 @@
-from collections import defaultdict
-import networkx as nx
-import matplotlib.pyplot as plt
+import time
 from rich.console import Console
 from rich.panel import Panel
 import questionary
+from collections import defaultdict
+
+from helpers.result_helper import show_result, visualize_route
+from store.states import GlobalState
+
+from pprint import pprint
 
 console = Console()
 
 class GrafDfs:
-    def __init__(self):
-        self.simpul = []  # Daftar simpul (node)
+    def __init__(self, graph_data):
         self.daftar_ketetanggaan = defaultdict(list)  # Representasi adjacency list
         self.biaya = {}  # Biaya tepi (edge)
+        self.simpul = []  # Daftar simpul
         self.simpul_awal = None
         self.simpul_akhir = None
+        self._build_graph(graph_data)
 
-    def tambah_simpul(self, nama_simpul):
-        """Menambahkan simpul ke graf"""
-        if nama_simpul not in self.simpul:
-            self.simpul.append(nama_simpul)
-    
-    def tambah_tepi(self, sumber, tujuan, biaya=1):
-        """Menambahkan tepi antara simpul sumber dan tujuan dengan biaya tertentu"""
-        if sumber not in self.simpul:
-            self.tambah_simpul(sumber)
-        if tujuan not in self.simpul:
-            self.tambah_simpul(tujuan)
-        
-        # Tambahkan tepi ke kedua arah karena graf tidak berarah
-        if tujuan not in self.daftar_ketetanggaan[sumber]:
-            self.daftar_ketetanggaan[sumber].append(tujuan)
-            self.biaya[(sumber, tujuan)] = biaya
-            
-        if sumber not in self.daftar_ketetanggaan[tujuan]:
-            self.daftar_ketetanggaan[tujuan].append(sumber)
-            self.biaya[(tujuan, sumber)] = biaya
-    
+    def _build_graph(self, graph_data):
+        """Membangun graf dari data GlobalState.malang_graph"""
+        # Tambahkan semua simpul
+        for item in graph_data:
+            node = item["node"]
+            if node not in self.simpul:
+                self.simpul.append(node)
+
+        # Tambahkan tepi dari data branch
+        for item in graph_data:
+            simpul_sumber = item["node"]
+            for tetangga in item["branch"]:
+                simpul_tujuan = tetangga["node"]
+                biaya = tetangga["distance"]
+                if biaya > 0:  # Abaikan jarak 0
+                    if simpul_tujuan not in self.daftar_ketetanggaan[simpul_sumber]:
+                        self.daftar_ketetanggaan[simpul_sumber].append(simpul_tujuan)
+                        self.biaya[(simpul_sumber, simpul_tujuan)] = biaya
+                    if simpul_sumber not in self.daftar_ketetanggaan[simpul_tujuan]:
+                        self.daftar_ketetanggaan[simpul_tujuan].append(simpul_sumber)
+                        self.biaya[(simpul_tujuan, simpul_sumber)] = biaya
+
     def tetapkan_simpul_awal(self, simpul):
         """Menetapkan simpul awal untuk algoritma pencarian"""
         if simpul in self.simpul:
             self.simpul_awal = simpul
             return True
         return False
-    
+
     def tetapkan_simpul_akhir(self, simpul):
         """Menetapkan simpul akhir untuk algoritma pencarian"""
         if simpul in self.simpul:
             self.simpul_akhir = simpul
             return True
         return False
-    
+
     def depth_first_search(self):
         """
         Melakukan pencarian depth-first dari simpul_awal ke simpul_akhir
-        Mengembalikan tuple (jalur, total_biaya, semua_jalur, semua_biaya) jika jalur ditemukan,
-        sebaliknya mengembalikan (None, None, semua_jalur, semua_biaya)
+        Mengembalikan tuple (jalur, total_biaya, semua_jalur)
         """
         if not self.simpul_awal or not self.simpul_akhir:
             raise ValueError("Simpul awal dan simpul akhir harus ditetapkan sebelum menjalankan DFS")
-        
-        # Inisialisasi struktur data
+
         tumpukan = [(self.simpul_awal, [self.simpul_awal], 0)]  # (simpul_saat_ini, jalur, biaya_sejauh_ini)
         dikunjungi = set()
         semua_jalur = []
-        semua_biaya = []
-        
+
         while tumpukan:
             simpul_saat_ini, jalur, biaya = tumpukan.pop()  # DFS menggunakan tumpukan (LIFO)
             semua_jalur.append(jalur.copy())
-            semua_biaya.append(biaya)
-            
-            # Periksa apakah kita telah mencapai simpul akhir
+
             if simpul_saat_ini == self.simpul_akhir:
-                return jalur, biaya, semua_jalur, semua_biaya
-            
-            # Tandai simpul saat ini sebagai dikunjungi
+                return jalur, biaya, semua_jalur
+
             if simpul_saat_ini not in dikunjungi:
                 dikunjungi.add(simpul_saat_ini)
-                
-                # Jelajahi tetangga
+
                 for tetangga in self.daftar_ketetanggaan[simpul_saat_ini]:
                     if tetangga not in dikunjungi:
                         biaya_tepi = self.biaya.get((simpul_saat_ini, tetangga), 1)
                         jalur_baru = jalur + [tetangga]
                         biaya_baru = biaya + biaya_tepi
                         tumpukan.append((tetangga, jalur_baru, biaya_baru))
-        
-        # Jika tidak ada jalur yang ditemukan
-        return None, None, semua_jalur, semua_biaya
-    
-    def to_networkx(self):
-        """Mengonversi graf ke dalam format networkx untuk visualisasi"""
-        G = nx.Graph()
-        # Tambahkan simpul
-        for simpul in self.simpul:
-            G.add_node(simpul)
-        # Tambahkan tepi dengan bobot
-        for sumber in self.daftar_ketetanggaan:
-            for tujuan in self.daftar_ketetanggaan[sumber]:
-                if (sumber, tujuan) in self.biaya:  # Pastikan hanya menambahkan tepi sekali
-                    G.add_edge(sumber, tujuan, weight=self.biaya[(sumber, tujuan)])
-        return G
 
-def cetak_jalur(jalur, biaya):
-    """Mencetak jalur dan biaya"""
-    if jalur:
-        console.print(Panel(f"[bold green]Jalur ditemukan: {' -> '.join(jalur)}[/bold green]"))
-        console.print(f"Total biaya: [yellow]{biaya}[/yellow]")
+        return None, None, semua_jalur
+
+def search(start: str = None, goal: str = None) -> tuple[list[str], int, list[str]]:
+    path = []
+    visited = []
+
+    # Pastikan malang_graph ada
+    if not GlobalState.malang_graph:
+        console.print("[red]Data graf tidak ditemukan di GlobalState![/red]")
+        return path, 0, visited
+
+    # Buat graf dari data GlobalState
+    graf = GrafDfs(GlobalState.malang_graph)
+
+    # Tetapkan simpul awal dan akhir
+    if start and goal:
+        graf.tetapkan_simpul_awal(start)
+        graf.tetapkan_simpul_akhir(goal)
     else:
-        console.print(Panel("[bold red]Tidak ada jalur yang ditemukan[/bold red]"))
+        # Jika start atau goal tidak diberikan, gunakan nilai dari GlobalState
+        if not GlobalState.start_location or not GlobalState.destination_location:
+            console.print("[red]Simpul awal atau akhir tidak ditemukan di GlobalState![/red]")
+            return path, 0, visited
+        graf.tetapkan_simpul_awal(GlobalState.start_location)
+        graf.tetapkan_simpul_akhir(GlobalState.destination_location)
 
-def cetak_proses_pencarian(semua_jalur, semua_biaya):
-    """Mencetak proses pencarian"""
-    console.print("\nProses pencarian:")
-    for i, (jalur, biaya) in enumerate(zip(semua_jalur, semua_biaya)):
-        console.print(f"Langkah {i+1}: Jalur = [green]{' -> '.join(jalur)}[/green], Biaya sejauh ini = [yellow]{biaya}[/yellow]")
-
-def input_integer(pesan):
-    """Meminta input integer dari pengguna"""
-    while True:
-        try:
-            nilai = int(input(pesan))
-            return nilai
-        except ValueError:
-            print("Masukkan nilai numerik yang valid!")
-
-def visualize_graph(G: nx.Graph, path=None):
-    """
-    Menggambar graf menggunakan networkx dan matplotlib.
-    Jika path diberikan, jalur tersebut akan disorot.
-    """
-    pos = nx.spring_layout(G)  # Posisi simpul menggunakan spring layout
-    
-    # Gambar simpul
-    nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=500)
-    
-    # Gambar tepi
-    edge_labels = nx.get_edge_attributes(G, 'weight')
-    nx.draw_networkx_edges(G, pos, edge_color='black', width=1)
-    
-    # Jika ada jalur, sorot jalur tersebut
-    if path:
-        path_edges = list(zip(path[:-1], path[1:]))
-        nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='red', width=2)
-    
-    # Gambar label simpul dan bobot tepi
-    nx.draw_networkx_labels(G, pos, font_size=10, font_weight='bold')
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
-    
-    plt.title("Visualisasi Graf dan Jalur (Jalur Merah jika Ditemukan)")
-    plt.show()
-
-def run_dfs():
-    """
-    Execute the Depth First Search (DFS) algorithm and visualize the graph.
-    """
-    console.print(Panel("[bold cyan]PROGRAM ALGORITMA DFS DENGAN VISUALISASI GRAF[/bold cyan]"))
-    
-    graf = GrafDfs()
-    
-    # Input jumlah simpul
-    jumlah_simpul = input_integer("Masukkan jumlah simpul: ")
-    
-    # Input nama-nama simpul
-    console.print("\nMasukkan nama untuk setiap simpul:")
-    for i in range(jumlah_simpul):
-        nama_simpul = input(f"Nama simpul {i+1}: ")
-        graf.tambah_simpul(nama_simpul)
-    
-    # Input jumlah tepi
-    console.print("\n--- Menentukan Hubungan Antar Simpul ---")
-    jumlah_tepi = input_integer("Masukkan jumlah tepi/hubungan: ")
-    
-    # Input tepi dan biaya
-    console.print("\nMasukkan tepi dan biayanya:")
-    for i in range(jumlah_tepi):
-        while True:
-            sumber = input(f"Tepi {i+1} - Simpul sumber: ")
-            if sumber in graf.simpul:
-                break
-            console.print(f"[red]Simpul '{sumber}' tidak ada! Pilih dari: {graf.simpul}[/red]")
-        
-        while True:
-            tujuan = input(f"Tepi {i+1} - Simpul tujuan: ")
-            if tujuan in graf.simpul:
-                break
-            console.print(f"[red]Simpul '{tujuan}' tidak ada! Pilih dari: {graf.simpul}[/red]")
-        
-        biaya = input_integer(f"Tepi {i+1} - Biaya: ")
-        graf.tambah_tepi(sumber, tujuan, biaya)
-        console.print(f"Tepi ditambahkan: [cyan]{sumber} <-> {tujuan}[/cyan] (biaya: [yellow]{biaya}[/yellow])")
-    
-    # Input simpul awal dan akhir
-    console.print("\n--- Menentukan Simpul Awal dan Akhir ---")
-    while True:
-        simpul_awal = input("Masukkan simpul awal: ")
-        if graf.tetapkan_simpul_awal(simpul_awal):
-            break
-        console.print(f"[red]Simpul '{simpul_awal}' tidak ada! Pilih dari: {graf.simpul}[/red]")
-    
-    while True:
-        simpul_akhir = input("Masukkan simpul akhir: ")
-        if graf.tetapkan_simpul_akhir(simpul_akhir):
-            break
-        console.print(f"[red]Simpul '{simpul_akhir}' tidak ada! Pilih dari: {graf.simpul}[/red]")
-    
-    # Jalankan DFS dan tampilkan hasilnya
+    # Jalankan DFS
     try:
-        console.print("\n=== Menjalankan Algoritma DFS ===")
-        jalur, biaya, semua_jalur, semua_biaya = graf.depth_first_search()
-        cetak_jalur(jalur, biaya)
-        cetak_proses_pencarian(semua_jalur, semua_biaya)
+        jalur, biaya, semua_jalur = graf.depth_first_search()
+        if jalur:
+            path = jalur
+            visited = semua_jalur
+            return path, int(biaya), visited
+        else:
+            console.print("[red]Tidak ada jalur yang ditemukan![/red]")
+            return path, 0, visited
     except ValueError as e:
         console.print(f"[red]Error: {e}[/red]")
-        return
+        return path, 0, visited
+
+def search_multigoal() -> tuple[list[str], int, list[str]]:
+    path = []
+    visited = []
+
+    # Pastikan malang_graph ada
+    if not GlobalState.malang_graph:
+        console.print("[red]Data graf tidak ditemukan di GlobalState![/red]")
+        return path, 0, visited
+
+    # Buat graf dari data GlobalState
+    graf = GrafDfs(GlobalState.malang_graph)
+
+    # Pastikan ada simpul awal dan beberapa tujuan
+    if not GlobalState.start_location or not GlobalState.destination_location:
+        console.print("[red]Simpul awal atau tujuan tidak ditemukan di GlobalState![/red]")
+        return path, 0, visited
+
+    # Pastikan destination_location adalah list untuk mode multi
+    if not isinstance(GlobalState.destination_location, list):
+        console.print("[red]Destination harus berupa list untuk mode multi-goal![/red]")
+        return path, 0, visited
+
+    # Inisialisasi variabel
+    total_biaya = 0
+    semua_jalur = []
+    jalur_lengkap = [GlobalState.start_location]
+
+    # Lakukan DFS untuk setiap tujuan secara berurutan
+    current_start = GlobalState.start_location
+    for goal in GlobalState.destination_location:
+        graf.tetapkan_simpul_awal(current_start)
+        graf.tetapkan_simpul_akhir(goal)
+
+        try:
+            jalur, biaya, jalur_sebagian = graf.depth_first_search()
+            if not jalur:
+                console.print(f"[red]Tidak ada jalur dari {current_start} ke {goal}![/red]")
+                return path, 0, visited
+
+            # Tambahkan jalur (tanpa simpul awal yang duplikat)
+            jalur_lengkap.extend(jalur[1:])
+            total_biaya += biaya
+            semua_jalur.extend(jalur_sebagian)
+
+            # Simpul tujuan saat ini menjadi simpul awal untuk langkah berikutnya
+            current_start = goal
+
+        except ValueError as e:
+            console.print(f"[red]Error: {e}[/red]")
+            return path, 0, visited
+
+    path = jalur_lengkap
+    visited = semua_jalur
+    return path, int(total_biaya), visited
+
+def run_dfs() -> tuple[list[str], int, list[str]]:
+    """
+    Execute the Depth First Search (DFS) algorithm.
+    """
     
-    # Visualisasi graf
-    if questionary.confirm("Apakah Anda ingin melihat visualisasi graf dan jalur?").ask():
-        G = graf.to_networkx()
-        visualize_graph(G, path=jalur)
+    start_time = time.time()
+    
+    if GlobalState.is_multi:
+        result = search_multigoal()
+    else:
+        result = search()
+        
+    end_time = time.time()
+    time_computation = end_time - start_time
+    
+    show_result(result, time_computation)
+    
+    if result:
+        _, cost, _ = result
+        estimated_time = cost / 833.33  # Assume speed is 50 km/h (833.33 m/minutes)
+        
+        if estimated_time > GlobalState.max_operating_time:
+            console.print(f"[bold red]WARNING!: This route takes {estimated_time:.2f} minutes, "
+                        f"melebihi batas waktu operasional {GlobalState.max_operating_time} menit![/bold red]")
 
-    console.print("\n=== Program Selesai ===")
+    if result[0] and GlobalState.G is not None and GlobalState.location_nodes is not None:
+        if questionary.confirm("Apakah Anda ingin melihat visualisasi rute pada peta?").ask():
+            visualize_route(result[0])
 
-if __name__ == "__main__":
-    run_dfs()
+    return result
