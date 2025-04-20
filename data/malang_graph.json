@@ -1,0 +1,342 @@
+[
+    {
+        "node": "Alun-Alun Malang, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Mall Olympic Garden, Malang, Indonesia",
+                "distance": 1154.3656242609043
+            },
+            {
+                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+                "distance": 1343.4718297895142
+            },
+            {
+                "node": "Pasar Besar Malang, Malang, Indonesia",
+                "distance": 629.0594653831745
+            },
+            {
+                "node": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
+                "distance": 1252.5190882648053
+            },
+            {
+                "node": "Balai Kota Malang, Malang, Indonesia",
+                "distance": 821.5253032114675
+            },
+            {
+                "node": "Stadion Kanjuruhan, Malang, Indonesia",
+                "distance": 8459.003943726855
+            }
+        ]
+    },
+    {
+        "node": "Stasiun Malang Kota Baru, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Balai Kota Malang, Malang, Indonesia",
+                "distance": 324.9592893077888
+            },
+            {
+                "node": "Terminal Arjosari, Malang, Indonesia",
+                "distance": 6535.23722952953
+            },
+            {
+                "node": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
+                "distance": 701.5891105523165
+            }
+        ]
+    },
+    {
+        "node": "Mall Olympic Garden, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Alun-Alun Malang, Malang, Indonesia",
+                "distance": 1154.3656242609043
+            },
+            {
+                "node": "Balai Kota Malang, Malang, Indonesia",
+                "distance": 1606.7221223264116
+            },
+            {
+                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+                "distance": 1528.1112975086983
+            },
+            {
+                "node": "Universitas Negeri Malang, Malang, Indonesia",
+                "distance": 2119.038365131411
+            }
+        ]
+    },
+    {
+        "node": "Universitas Brawijaya, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Universitas Negeri Malang, Malang, Indonesia",
+                "distance": 2060.133958078025
+            },
+            {
+                "node": "Kampus UMM, Malang, Indonesia",
+                "distance": 3413.0582573735605
+            },
+            {
+                "node": "Terminal Arjosari, Malang, Indonesia",
+                "distance": 6666.664369298792
+            }
+        ]
+    },
+    {
+        "node": "Universitas Negeri Malang, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Universitas Brawijaya, Malang, Indonesia",
+                "distance": 2060.133958078025
+            },
+            {
+                "node": "Mall Olympic Garden, Malang, Indonesia",
+                "distance": 2119.0383651314105
+            }
+        ]
+    },
+    {
+        "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Balai Kota Malang, Malang, Indonesia",
+                "distance": 1134.5175710978813
+            },
+            {
+                "node": "Alun-Alun Malang, Malang, Indonesia",
+                "distance": 1343.4718297895142
+            },
+            {
+                "node": "Mall Olympic Garden, Malang, Indonesia",
+                "distance": 1528.111297508698
+            }
+        ]
+    },
+    {
+        "node": "Balai Kota Malang, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Stasiun Malang Kota Baru, Malang, Indonesia",
+                "distance": 324.9592893077888
+            },
+            {
+                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+                "distance": 1134.5175710978813
+            },
+            {
+                "node": "Alun-Alun Malang, Malang, Indonesia",
+                "distance": 821.5253032114676
+            },
+            {
+                "node": "Mall Olympic Garden, Malang, Indonesia",
+                "distance": 1606.7221223264119
+            }
+        ]
+    },
+    {
+        "node": "Terminal Arjosari, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Stasiun Malang Kota Baru, Malang, Indonesia",
+                "distance": 6535.237229529527
+            },
+            {
+                "node": "Kampus UMM, Malang, Indonesia",
+                "distance": 8420.248734360615
+            },
+            {
+                "node": "Universitas Brawijaya, Malang, Indonesia",
+                "distance": 6666.66436929879
+            },
+            {
+                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+                "distance": 6443.998074292916
+            }
+        ]
+    },
+    {
+        "node": "Stadion Kanjuruhan, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Alun-Alun Malang, Malang, Indonesia",
+                "distance": 8459.003943726855
+            },
+            {
+                "node": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
+                "distance": 8568.295326268246
+            },
+            {
+                "node": "Pasar Besar Malang, Malang, Indonesia",
+                "distance": 7852.81409824988
+            }
+        ]
+    },
+    {
+        "node": "Jawa Timur Park 1, Batu, Indonesia",
+        "branch": [
+            {
+                "node": "Museum Angkut, Batu, Indonesia",
+                "distance": 0
+            },
+            {
+                "node": "Jawa Timur Park 2, Batu, Indonesia",
+                "distance": 0
+            }
+        ]
+    },
+    {
+        "node": "Jawa Timur Park 2, Batu, Indonesia",
+        "branch": [
+            {
+                "node": "Jawa Timur Park 1, Batu, Indonesia",
+                "distance": 0
+            },
+            {
+                "node": "Taman Rekreasi Sengkaling, Malang, Indonesia",
+                "distance": 5871.17659492844
+            }
+        ]
+    },
+    {
+        "node": "Museum Angkut, Batu, Indonesia",
+        "branch": [
+            {
+                "node": "Jawa Timur Park 1, Batu, Indonesia",
+                "distance": 0
+            },
+            {
+                "node": "Alun-Alun Batu, Batu, Indonesia",
+                "distance": 0
+            },
+            {
+                "node": "Coban Rondo, Batu, Indonesia",
+                "distance": 0
+            }
+        ]
+    },
+    {
+        "node": "Alun-Alun Batu, Batu, Indonesia",
+        "branch": [
+            {
+                "node": "Museum Angkut, Batu, Indonesia",
+                "distance": 0
+            },
+            {
+                "node": "Taman Rekreasi Selecta, Batu, Indonesia",
+                "distance": 5871.17659492844
+            },
+            {
+                "node": "Coban Rondo, Batu, Indonesia",
+                "distance": 0
+            }
+        ]
+    },
+    {
+        "node": "Taman Rekreasi Selecta, Batu, Indonesia",
+        "branch": [
+            {
+                "node": "Alun-Alun Batu, Batu, Indonesia",
+                "distance": 5871.17659492844
+            }
+        ]
+    },
+    {
+        "node": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Stasiun Malang Kota Baru, Malang, Indonesia",
+                "distance": 701.5891105523165
+            },
+            {
+                "node": "Stadion Kanjuruhan, Malang, Indonesia",
+                "distance": 8568.295326268244
+            },
+            {
+                "node": "Alun-Alun Malang, Malang, Indonesia",
+                "distance": 1252.5190882648055
+            },
+            {
+                "node": "Terminal Arjosari, Malang, Indonesia",
+                "distance": 7002.235499106701
+            },
+            {
+                "node": "Pasar Besar Malang, Malang, Indonesia",
+                "distance": 1223.8737678396599
+            }
+        ]
+    },
+    {
+        "node": "Taman Rekreasi Sengkaling, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Kampus UMM, Malang, Indonesia",
+                "distance": 753.9440246822751
+            },
+            {
+                "node": "Jawa Timur Park 2, Batu, Indonesia",
+                "distance": 5871.17659492844
+            }
+        ]
+    },
+    {
+        "node": "Pasar Besar Malang, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Alun-Alun Malang, Malang, Indonesia",
+                "distance": 629.0594653831745
+            },
+            {
+                "node": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
+                "distance": 1223.8737678396596
+            },
+            {
+                "node": "Stadion Kanjuruhan, Malang, Indonesia",
+                "distance": 7852.814098249881
+            }
+        ]
+    },
+    {
+        "node": "Paralayang, Batu, Indonesia",
+        "branch": [
+            {
+                "node": "Coban Rondo, Batu, Indonesia",
+                "distance": 0
+            }
+        ]
+    },
+    {
+        "node": "Coban Rondo, Batu, Indonesia",
+        "branch": [
+            {
+                "node": "Paralayang, Batu, Indonesia",
+                "distance": 0
+            },
+            {
+                "node": "Alun-Alun Batu, Batu, Indonesia",
+                "distance": 0
+            },
+            {
+                "node": "Museum Angkut, Batu, Indonesia",
+                "distance": 0
+            }
+        ]
+    },
+    {
+        "node": "Kampus UMM, Malang, Indonesia",
+        "branch": [
+            {
+                "node": "Taman Rekreasi Sengkaling, Malang, Indonesia",
+                "distance": 753.944024682275
+            },
+            {
+                "node": "Universitas Brawijaya, Malang, Indonesia",
+                "distance": 3413.058257373561
+            },
+            {
+                "node": "Terminal Arjosari, Malang, Indonesia",
+                "distance": 8420.248734360615
+            }
+        ]
+    }
+]
