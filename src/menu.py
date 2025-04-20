@@ -7,7 +7,7 @@ from rich.console import Console
 import questionary
 
 from bfs.bfs import run_bfs
-from dfs.dfs import run_dfs
+from dfs.dfs_template import run_dfs
 from ucs.ucs import run_ucs
 from dls.dls import run_dls
 from config.config import IMG_DIR, DATA_DIR
