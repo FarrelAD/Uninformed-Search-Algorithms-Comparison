@@ -17,12 +17,12 @@ from store.states import GlobalState
 console = Console()
 
 def find_route_destination() -> None:
-    list_of_locations = sorted(GlobalState.malang_graph.keys())
+    list_of_locations = sorted([node["name"] for node in GlobalState.location_nodes])
 
     console.print("\n[bold cyan]Select start and destination location[/bold cyan]")
     
     GlobalState.start_location = questionary.select(
-        "Pilih lokasi awal:",
+        "Select start location:",
         choices=list_of_locations
     ).ask()
     

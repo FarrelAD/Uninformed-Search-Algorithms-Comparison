@@ -125,6 +125,7 @@ def load_malang_osm_data() -> None:
         
         GlobalState.G = G
         GlobalState.malang_graph = new_graph
+        GlobalState.location_nodes = malang_locations
     except Exception as e:
         console.print(f"[yellow]Error saat memproses data OSM dari cache: {str(e)}. Mencoba memuat ulang dari OSM...[/yellow]")
 
