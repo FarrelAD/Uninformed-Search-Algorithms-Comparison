@@ -6,10 +6,10 @@ from pathlib import Path
 from rich.console import Console
 import questionary
 
-from bfs.bfs import run_bfs
-from dfs.dfs import run_dfs
-from ucs.ucs import run_ucs
-from dls.dls import run_dls
+from algorithms.bfs import run_bfs
+from algorithms.dfs import run_dfs
+from algorithms.ucs import run_ucs
+from algorithms.dls import run_dls
 from config.config import IMG_DIR, DATA_DIR
 from helpers.system_helper import open_image
 from store.states import GlobalState
