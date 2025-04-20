@@ -8,7 +8,7 @@ from store.states import GlobalState
 
 console = Console()
 
-def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[str], int, list[str]]:
+def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[str], float, int]:
     start = start if start is not None else GlobalState.start_location
     goal = goal if goal is not None else GlobalState.destination_location
     
@@ -18,33 +18,35 @@ def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[st
 
     current_depth = 0
     path = []
-    visited = []
+    visited = 0
     
     tree = next((node for node in GlobalState.malang_graph if node["node"] == start), None)
     
     is_found = False
     
     def go_deep(tree: dict, depth: int, prev_node: str = None, distance: float = 0) -> None:
-        nonlocal is_found, path
+        """
+        Recursion function to get the correct path
+        """
+        nonlocal is_found, path, visited
         
         depth += 1
         path.append({
             "name": tree["node"],
             "distance": distance,
         })
-        visited.append(tree["node"])
+        visited += 1
         
         if is_found:
             return True
         
+        if depth > max_depth:
+            path.pop()
+            return False
+        
         if tree["node"] == goal:
             is_found = True
             return True
-        
-        if depth == max_depth:
-            print("Depth limit reached!")
-            path.pop()
-            return False
         
         branch = [n for n in tree["branch"] if n["node"] != prev_node]
         for n in branch:
@@ -65,8 +67,8 @@ def search(max_depth: int, start: str = None, goal: str = None) -> tuple[list[st
     else:
         print("Goal not found!")
     
-    total_distance = sum([p["distance"] for p in path])
-    all_path = [p["name"] for p in path]
+    total_distance = sum([p["distance"] for p in path]) if is_found else 0
+    all_path = [p["name"] for p in path] if is_found else ["Not found"]
     
     return all_path, total_distance, visited
 
