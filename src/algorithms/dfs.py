@@ -8,7 +8,7 @@ from store.states import GlobalState
 
 console = Console()
 
-def search(start: str = None, goal: str = None) -> tuple[list[str], int, list[str]]:
+def search(start: str = None, goal: str = None) -> tuple[list[str], int, int]:
     """
     Run single destination search
     """
@@ -50,40 +50,37 @@ def search(start: str = None, goal: str = None) -> tuple[list[str], int, list[st
     
     return [], 0, len(semua_jalur)
 
-
-def search_multigoal() -> tuple[list[str], int, list[str]]:
+def search_multigoal() -> list[tuple[list[str], float, int]]:
     """
-    Run multigoal/destination search
+    Run multi-destination search using depth-first search.
     """
-    path = []
-    visited = 0
+    results = []  # List to store results for each goal
+    total_expanded_nodes = 0
 
     if not GlobalState.malang_graph:
         console.print("[red]Data graf tidak ditemukan di GlobalState![/red]")
-        return path, 0, visited
+        return results
 
     # Get the start location
     start = GlobalState.start_location
     current_start = start
-    total_biaya = 0
-    semua_jalur = []
 
     for goal in GlobalState.destination_location:
         if GlobalState.show_process:
             console.print(f"\n[bold cyan]Searching for goal: {goal}[/bold cyan] from [green]{current_start}[/green]")
 
-        jalur, biaya, jalur_sebagian = search(current_start, goal)
+        jalur, biaya, expanded_nodes = search(current_start, goal)
         
         if jalur:
-            path.extend(jalur[1:])
-            total_biaya += biaya
-            semua_jalur.extend(jalur_sebagian)
+            results.append((jalur, biaya, expanded_nodes))
+            total_expanded_nodes += expanded_nodes
             current_start = goal  # Set current goal as new start
         else:
             console.print(f"[red]Tidak ada jalur dari {current_start} ke {goal}![/red]")
-            return [], 0, []
+            results.append(([], 0, expanded_nodes))
 
-    return path, total_biaya, len(semua_jalur)
+    return results
+
 
 def run_dfs() -> None:
     """
