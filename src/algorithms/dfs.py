@@ -116,7 +116,7 @@ def search(start: str = None, goal: str = None) -> tuple[list[str], int, list[st
         jalur, biaya, semua_jalur = graf.depth_first_search()
         if jalur:
             path = jalur
-            visited = semua_jalur
+            visited += len(semua_jalur)
             return path, int(biaya), visited
         else:
             console.print("[red]Tidak ada jalur yang ditemukan![/red]")
