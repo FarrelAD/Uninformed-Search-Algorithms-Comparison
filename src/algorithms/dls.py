@@ -124,6 +124,8 @@ def run_dls() -> None:
         for i, r in enumerate(result):
             _, distance, _ = r
             sum_distance += distance
+    else:
+        _, distance, _ = result
     
     estimated_time = sum_distance if GlobalState.is_multi else distance / 833.33 # Assume speed is 50 km/h (833.33 m/minutes)
     
