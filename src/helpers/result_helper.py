@@ -25,8 +25,21 @@ def visualize_route(route: list) -> None:
         start_location = route[0].replace(" ", "_")
         end_location = route[-1].replace(" ", "_")
         
-        route_nodes = [GlobalState.location_nodes[loc] for loc in route]
+        # Create a dictionary for quick lookup of node_ids by location name
+        location_dict = {loc["name"]: loc["node_id"] for loc in GlobalState.location_nodes}
         
+        # Get node IDs for each location in the route
+        route_nodes = []
+        for loc in route:
+            if loc in location_dict:
+                route_nodes.append(location_dict[loc])
+            else:
+                console.print(f"[yellow]Warning: Location '{loc}' not found in location_nodes[/yellow]")
+        
+        if not route_nodes:
+            console.print("[red]No valid nodes found for visualization[/red]")
+            return
+            
         pairs = []
         for i in range(len(route_nodes)-1):
             pairs.append((route_nodes[i], route_nodes[i+1]))
@@ -50,10 +63,19 @@ def visualize_route(route: list) -> None:
             except Exception as e:
                 console.print(f"[yellow]Error plotting segment: {str(e)}[/yellow]")
         
+        # Find corresponding location info for each node
+        node_to_location = {}
+        for loc in GlobalState.location_nodes:
+            node_to_location[loc["node_id"]] = loc
+        
         for i, node in enumerate(route_nodes):
             try:
-                lat = GlobalState.G.nodes[node]['y']
-                lon = GlobalState.G.nodes[node]['x']
+                if node in node_to_location:
+                    lat = node_to_location[node]["latitude"]
+                    lon = node_to_location[node]["longitude"]
+                else:
+                    lat = GlobalState.G.nodes[node]['y']
+                    lon = GlobalState.G.nodes[node]['x']
                 
                 if i == 0:  # Start
                     icon = folium.Icon(color='green', icon='play')
@@ -108,7 +130,7 @@ def show_result(method: str, result: tuple[list[str], float, int] | list[tuple[l
     table.add_column("Detail", style="green")
     
     table.add_row("From", GlobalState.start_location)
-    
+
     if GlobalState.is_multi:
         table.add_row("To (Multi-Goal)", "".join(f"- {d.replace(", Batu, Indonesia", "").replace(", Malang, Indonesia", "").strip()}\n" for d in GlobalState.destination_location))
         
