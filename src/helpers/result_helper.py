@@ -118,7 +118,7 @@ def show_result(method: str, result: tuple[list[str], float, int] | list[tuple[l
             path, distance, visited = r
             sum_distance += distance
             total_visited += visited
-            table.add_row(f"Route-{i}", "".join(f"- {p.replace(", Batu, Indonesia", "").replace(", Malang, Indonesia", "").strip()}\n" for p in path))
+            table.add_row(f"Route-{i+1}", "".join(f"- {p.replace(", Batu, Indonesia", "").replace(", Malang, Indonesia", "").strip()}\n" for p in path))
         
         table.add_row("Total distance", f"{sum_distance:.2f} meter")
         table.add_row("Time estimation", f"{sum_distance/833.33:.2f} minutes")  # Assume speed is 50 km/h (833.33 m/minutes)

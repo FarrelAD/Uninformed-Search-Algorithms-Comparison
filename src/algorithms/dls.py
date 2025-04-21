@@ -119,14 +119,17 @@ def run_dls() -> None:
     
     show_result("DLS", result, time_computation)
     
-    if result:
-        _, cost, _ = result
-        estimated_time = cost / 833.33  # Assume speed is 50 km/h (833.33 m/minutes)
-        
-        if estimated_time > GlobalState.max_operating_time:
-            console.print(f"[bold red]WARNING!: This route takes {estimated_time:.2f} minutes, "
+    if GlobalState.is_multi:
+        sum_distance = 0
+        for i, r in enumerate(result):
+            _, distance, _ = r
+            sum_distance += distance
+    
+    estimated_time = sum_distance if GlobalState.is_multi else distance / 833.33 # Assume speed is 50 km/h (833.33 m/minutes)
+    
+    if estimated_time > GlobalState.max_operating_time:
+        console.print(f"[bold red]WARNING!: This route takes {estimated_time:.2f} minutes, "
                         f"melebihi batas waktu operasional {GlobalState.max_operating_time} menit![/bold red]")
 
-    if result[0] and GlobalState.G is not None and GlobalState.location_nodes is not None:
-        if questionary.confirm("Apakah Anda ingin melihat visualisasi rute pada peta?").ask():
-            visualize_route(result[0])
+    if questionary.confirm("Apakah Anda ingin melihat visualisasi rute pada peta?").ask():
+        visualize_route(result[0])
