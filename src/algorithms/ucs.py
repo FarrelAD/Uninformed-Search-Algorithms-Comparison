@@ -37,7 +37,7 @@ class UniformCostSearch:
         heapq.heapify(open_list)
         
         best_cost = {start: 0}
-        visited = []
+        visited = 0
         step = 1
         
         if GlobalState.show_process:
@@ -49,8 +49,8 @@ class UniformCostSearch:
             current_cost, current, path = heapq.heappop(open_list)
             
             # Add to visited list (for tracking)
-            if current not in visited:
-                visited.append(current)
+            # if current not in visited:
+            visited += 1
             
             if GlobalState.show_process:
                 console.print(f"\n[bold]Langkah {step}:[/bold]")
@@ -96,62 +96,32 @@ class UniformCostSearch:
             console.print(Panel("[bold red]TIDAK ADA RUTE![/bold red] Tidak dapat menemukan rute ke tujuan."))
         return None
 
-    def search_multigoal(self) -> tuple[list[str], int, list]:
-        """
-        Find the route from start to multiple goals using Uniform Cost Search sequentially.
-        """
-        current_location = GlobalState.start_location
-        full_path = [current_location]
-        total_cost = 0
-        all_visited_nodes = []
-        
-        if not isinstance(GlobalState.destination_location, list):
-            console.print("[bold red]Error: destination_location should be a list for multi-goal search[/bold red]")
-            return None
-        
-        remaining_goals = GlobalState.destination_location.copy()
-        
-        while remaining_goals:
-            # Cari tujuan terdekat dari lokasi saat ini
-            nearest_goal = None
-            nearest_path = None
-            nearest_cost = float('inf')
-            nearest_visited = None
-            
-            for goal in remaining_goals:
+    def search_multigoal(self) -> list[tuple[list[str], float, int]] | None:
+            """
+            Run multigoal/destination search.
+            """
+            result = []
+            start = GlobalState.start_location
+            iteration = 0
+
+            while len(GlobalState.destination_location) > 0:
+                iteration += 1
+                destination = GlobalState.destination_location.pop(0)
+
                 if GlobalState.show_process:
-                    console.print(f"\n[bold cyan]Mencoba tujuan: {goal}[/bold cyan]")
-                    console.print(f"Dari lokasi saat ini: [green]{current_location}[/green]")
-                
-                # Cari rute ke tujuan ini
-                result = self.search(current_location, goal)
-                
-                if result is not None:
-                    path, cost, visited = result
-                    if cost < nearest_cost:
-                        nearest_goal = goal
-                        nearest_path = path
-                        nearest_cost = cost
-                        nearest_visited = visited
-            
-            # Jika tidak ada tujuan yang dapat dicapai, keluar dari loop
-            if nearest_goal is None:
-                console.print(f"[bold red]Tidak dapat menemukan rute ke tujuan apa pun dari {current_location}[/bold red]")
-                return None
-            
-            # Tambahkan rute terbaik ke path keseluruhan
-            if len(full_path) > 0 and len(nearest_path) > 0 and full_path[-1] == nearest_path[0]:
-                nearest_path = nearest_path[1:]
-            
-            full_path.extend(nearest_path)
-            total_cost += nearest_cost
-            all_visited_nodes.extend(nearest_visited)
-            
-            # Perbarui lokasi saat ini dan hapus tujuan yang sudah dicapai
-            current_location = nearest_goal
-            remaining_goals.remove(nearest_goal)
-        
-        return full_path, total_cost, list(dict.fromkeys(all_visited_nodes))
+                    console.print(f"\n[bold cyan]Searching for destination number-{iteration}: {destination}[/bold cyan]")
+                    console.print(f"From: [green]{start}[/green]")
+
+                search_result = self.search(start, destination)
+                if search_result is None:
+                    if GlobalState.show_process:
+                        console.print(Panel(f"[bold red]Gagal menemukan rute ke tujuan: {destination}[/bold red]"))
+                    return None  # Langsung hentikan jika ada yang tidak bisa ditemukan
+
+                result.append(search_result)
+                start = destination  # Next start = previous goal
+
+            return result
 
 def run_ucs():
     ucs = UniformCostSearch(GlobalState.malang_graph)
@@ -165,19 +135,36 @@ def run_ucs():
         
     end_time = time.time()
     time_computation = end_time - start_time
-    
-    if result:  # Check if result is not None
-        show_result(result, time_computation)
-        
-        path, cost, _ = result
-        estimated_time = cost / 833.33  # Assume speed is 50 km/h (833.33 m/minutes)
-        
-        if estimated_time > GlobalState.max_operating_time:
-            console.print(f"[bold red]Peringatan: Rute ini membutuhkan waktu {estimated_time:.2f} menit, "
-                        f"melebihi batas waktu operasional {GlobalState.max_operating_time} menit![/bold red]")
 
-        if GlobalState.G is not None and GlobalState.location_nodes is not None:
-            if questionary.confirm("Apakah Anda ingin melihat visualisasi rute pada peta?").ask():
-                visualize_route(path)
+    show_result("UCS", result, time_computation)
+    
+    if GlobalState.is_multi:
+        sum_distance = 0
+        for i, r in enumerate(result):
+            path, distance, _ = r
+            sum_distance += distance
+        estimated_time = sum_distance / 833.33
     else:
-        console.print(Panel("[bold red]Error: Tidak dapat menemukan rute dari titik awal ke tujuan[/bold red]"))
+        path, distance, _ = result
+        estimated_time = distance / 833.33  # Assume speed is 50 km/h (833.33 m/minutes)
+    
+    if estimated_time > GlobalState.max_operating_time:
+        console.print(f"[bold red]WARNING!: This route takes {estimated_time:.2f} minutes, "
+                      f"melebihi batas waktu operasional {GlobalState.max_operating_time} menit![/bold red]")
+
+    if questionary.confirm("Apakah Anda ingin melihat visualisasi rute pada peta?").ask():
+        if GlobalState.is_multi:
+            # For multi-goal, we need to extract and combine all paths
+            combined_path = []
+            for r in result:
+                path, _, _ = r
+                if combined_path and combined_path[-1] == path[0]:
+                    # Avoid duplicating connecting points between segments
+                    combined_path.extend(path[1:])
+                else:
+                    combined_path.extend(path)
+            visualize_route(combined_path)
+        else:
+            # For single goal, we just pass the path
+            path, _, _ = result
+            visualize_route(path)
