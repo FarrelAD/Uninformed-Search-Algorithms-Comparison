@@ -24,16 +24,10 @@ def search(start: str = None, goal: str = None, limit: int = None) -> tuple[list
     dikunjungi = set()
     semua_jalur = []
 
-    # Ensure the graph data exists
-    if not GlobalState.malang_graph:
-        console.print("[red]Data graf tidak ditemukan di GlobalState![/red]")
-        return [], 0, len([])
-
-    # Perform Depth-First Search (DFS) or Depth-Limited Search (DLS)
     while tumpukan:
-        simpul_saat_ini, jalur, biaya = tumpukan.pop()  # DFS with stack (LIFO)
+        simpul_saat_ini, jalur, biaya = tumpukan.pop()
         
-        if limit and len(jalur) > limit:  # Depth-Limited Search check
+        if limit and len(jalur) > limit: 
             continue
         
         semua_jalur.append(jalur.copy())
@@ -44,7 +38,6 @@ def search(start: str = None, goal: str = None, limit: int = None) -> tuple[list
         if simpul_saat_ini not in dikunjungi:
             dikunjungi.add(simpul_saat_ini)
 
-            # Get neighbors from graph
             for item in GlobalState.malang_graph:
                 if item["node"] == simpul_saat_ini:
                     for tetangga in item["branch"]:
@@ -55,7 +48,7 @@ def search(start: str = None, goal: str = None, limit: int = None) -> tuple[list
     return [], 0, len(semua_jalur)
 
 
-def search_multigoal() -> list[tuple[list[str], float, int]]:
+def search_multigoal(limit: int) -> list[tuple[list[str], float, int]]:
     """
     Run multi-destination search using depth-first search or depth-limited search.
     """
@@ -75,7 +68,7 @@ def search_multigoal() -> list[tuple[list[str], float, int]]:
             console.print(f"\n[bold cyan]Searching for goal: {goal}[/bold cyan] from [green]{current_start}[/green]")
 
         # If depth limit is set, use it in search
-        jalur, biaya, expanded_nodes = search(current_start, goal, limit=GlobalState.depth_limit)
+        jalur, biaya, expanded_nodes = search(current_start, goal, limit)
         
         if jalur:
             results.append((jalur, biaya, expanded_nodes))
@@ -102,7 +95,7 @@ def run_dls() -> None:
 
     # Determine if it's a single goal or multi-goal search
     if GlobalState.is_multi:
-        result = search_multigoal()
+        result = search_multigoal(limit=max_depth)
     else:
         # Use depth-limited search if depth limit is set
         result = search(limit=max_depth)
