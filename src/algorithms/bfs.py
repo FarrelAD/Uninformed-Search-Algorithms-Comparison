@@ -141,10 +141,10 @@ def run_bfs():
             for r in result:
                 path, distance, _ = r
                 sum_distance += distance
-            estimated_time = sum_distance / 833.33
+            estimated_time = sum_distance / GlobalState.avg_speed
         else:
             path, distance, _ = result
-            estimated_time = distance / 833.33  # Assume speed is 50 km/h (833.33 m/minutes)
+            estimated_time = distance / GlobalState.avg_speed  # Assume speed is 50 km/h (GlobalState.avg_speed m/minutes)
         
         if estimated_time > GlobalState.max_operating_time:
             console.print(f"[bold red]WARNING!: This route takes {estimated_time:.2f} minutes, "

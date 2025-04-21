@@ -67,6 +67,15 @@ def find_route_destination() -> None:
     ).ask()
     GlobalState.max_operating_time = int(max_operating_time)
     
+    avg_speed = questionary.text(
+        "What is the average speed (km/h)?",
+        validate=lambda x: (
+            True if x.replace('.', '', 1).isdigit() else "Please enter a valid number"
+        )
+    ).ask()
+    
+    GlobalState.avg_speed = float(avg_speed) * 1000 / 60
+    
     algorithm_choice = questionary.select(
         "Select searching algorithm:",
         choices=[

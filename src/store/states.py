@@ -11,3 +11,4 @@ class GlobalState:
     max_operating_time: int = 0
     is_multi: bool = False
     show_process: bool = False
+    avg_speed: float = 0

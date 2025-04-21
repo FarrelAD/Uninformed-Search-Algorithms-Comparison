@@ -111,7 +111,7 @@ def run_dls() -> None:
     else:
         _, sum_distance, _ = result
 
-    estimated_time = sum_distance if GlobalState.is_multi else sum_distance / 833.33  # Assume speed is 50 km/h (833.33 m/minutes)
+    estimated_time = sum_distance if GlobalState.is_multi else sum_distance / GlobalState.avg_speed  # Assume speed is 50 km/h (GlobalState.avg_speed m/minutes)
 
     if estimated_time > GlobalState.max_operating_time:
         console.print(f"[bold red]WARNING!: This route takes {estimated_time:.2f} minutes, "
