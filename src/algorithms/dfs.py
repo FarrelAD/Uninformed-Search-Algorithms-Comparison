@@ -72,9 +72,9 @@ def search_multigoal() -> list[tuple[list[str], float, int]]:
         jalur, biaya, expanded_nodes = search(current_start, goal)
         
         if jalur:
-            path = jalur
-            visited = semua_jalur
-            return path, int(biaya), visited
+            results.append((jalur, biaya, expanded_nodes))
+            total_expanded_nodes += expanded_nodes
+            current_start = goal  # Set current goal as new start
         else:
             console.print(f"[red]Tidak ada jalur dari {current_start} ke {goal}![/red]")
             results.append(([], 0, expanded_nodes))
