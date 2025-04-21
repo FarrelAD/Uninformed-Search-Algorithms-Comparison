@@ -6,10 +6,10 @@ from pathlib import Path
 from rich.console import Console
 import questionary
 
-from bfs.bfs import run_bfs
-from dfs.dfs import run_dfs
-from ucs.ucs import run_ucs
-from dls.dls import run_dls
+from algorithms.bfs import run_bfs
+from algorithms.dfs import run_dfs
+from algorithms.ucs import run_ucs
+from algorithms.dls import run_dls
 from config.config import IMG_DIR, DATA_DIR
 from helpers.system_helper import open_image
 from store.states import GlobalState
@@ -26,14 +26,14 @@ def find_route_destination() -> None:
         choices=list_of_locations
     ).ask()
     
-    is_multi = questionary.confirm("Do you want to send to multiple destinations? (multi-goal)?").ask()
+    GlobalState.is_multi = questionary.confirm("Do you want to send to multiple destinations? (multi-goal)?").ask()
     
-    if is_multi:
+    if GlobalState.is_multi:
         destination_location = []
         total_destionation = questionary.text(
             "How many destination do you want to visit?",
-            validate=lambda text: text.isdigit() and 1 <= int(text) <= 5,
-            instruction="Enter the number of destination (1-5): "
+            validate=lambda text: text.isdigit() and 1 <= int(text) <= (len(list_of_locations) - 1),
+            instruction=f"Enter the number of destination (1-{len(list_of_locations) - 1}): "
         ).ask()
         total_destionation = int(total_destionation)
         
@@ -49,7 +49,7 @@ def find_route_destination() -> None:
             ).ask()
             destination_location.append(next_destination)
         
-        console.print(f"[green]Destinations to visit: {', '.join(destination_location)}[/green]")
+        console.print(f"[green]Destinations to visit: \n{''.join(f" - {d}\n" for d in destination_location)}[/green]")
     else:
         destination_location = questionary.select(
             "Select destination:",
