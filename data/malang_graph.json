@@ -4,11 +4,11 @@
         "branch": [
             {
                 "node": "Mall Olympic Garden, Malang, Indonesia",
-                "distance": 1154.3656242609043
+                "distance": 1153.4389306724
             },
             {
-                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
-                "distance": 1343.4718297895142
+                "node": "RSUD Saiful Anwar, Malang, Indonesia",
+                "distance": 1516.772197649721
             },
             {
                 "node": "Pasar Besar Malang, Malang, Indonesia",
@@ -24,7 +24,7 @@
             },
             {
                 "node": "Stadion Kanjuruhan, Malang, Indonesia",
-                "distance": 8459.003943726855
+                "distance": 8459.015793203842
             }
         ]
     },
@@ -37,7 +37,7 @@
             },
             {
                 "node": "Terminal Arjosari, Malang, Indonesia",
-                "distance": 6535.23722952953
+                "distance": 6535.237232426732
             },
             {
                 "node": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
@@ -50,19 +50,19 @@
         "branch": [
             {
                 "node": "Alun-Alun Malang, Malang, Indonesia",
-                "distance": 1154.3656242609043
+                "distance": 1153.4389306724
             },
             {
                 "node": "Balai Kota Malang, Malang, Indonesia",
-                "distance": 1606.7221223264116
+                "distance": 1610.520704430863
             },
             {
-                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
-                "distance": 1528.1112975086983
+                "node": "RSUD Saiful Anwar, Malang, Indonesia",
+                "distance": 1778.2391259811452
             },
             {
                 "node": "Universitas Negeri Malang, Malang, Indonesia",
-                "distance": 2119.038365131411
+                "distance": 2119.023970263235
             }
         ]
     },
@@ -79,7 +79,7 @@
             },
             {
                 "node": "Terminal Arjosari, Malang, Indonesia",
-                "distance": 6666.664369298792
+                "distance": 6665.786129779248
             }
         ]
     },
@@ -92,24 +92,24 @@
             },
             {
                 "node": "Mall Olympic Garden, Malang, Indonesia",
-                "distance": 2119.0383651314105
+                "distance": 2119.0239702632343
             }
         ]
     },
     {
-        "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+        "node": "RSUD Saiful Anwar, Malang, Indonesia",
         "branch": [
             {
                 "node": "Balai Kota Malang, Malang, Indonesia",
-                "distance": 1134.5175710978813
+                "distance": 766.4157541866962
             },
             {
                 "node": "Alun-Alun Malang, Malang, Indonesia",
-                "distance": 1343.4718297895142
+                "distance": 1516.7721976497214
             },
             {
                 "node": "Mall Olympic Garden, Malang, Indonesia",
-                "distance": 1528.111297508698
+                "distance": 1778.2391259811452
             }
         ]
     },
@@ -121,8 +121,8 @@
                 "distance": 324.9592893077888
             },
             {
-                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
-                "distance": 1134.5175710978813
+                "node": "RSUD Saiful Anwar, Malang, Indonesia",
+                "distance": 766.4157541866962
             },
             {
                 "node": "Alun-Alun Malang, Malang, Indonesia",
@@ -130,7 +130,7 @@
             },
             {
                 "node": "Mall Olympic Garden, Malang, Indonesia",
-                "distance": 1606.7221223264119
+                "distance": 1610.520704430863
             }
         ]
     },
@@ -139,7 +139,7 @@
         "branch": [
             {
                 "node": "Stasiun Malang Kota Baru, Malang, Indonesia",
-                "distance": 6535.237229529527
+                "distance": 6535.237232426728
             },
             {
                 "node": "Kampus UMM, Malang, Indonesia",
@@ -147,11 +147,11 @@
             },
             {
                 "node": "Universitas Brawijaya, Malang, Indonesia",
-                "distance": 6666.66436929879
+                "distance": 6665.786129779246
             },
             {
-                "node": "Rumah Sakit Saiful Anwar, Malang, Indonesia",
-                "distance": 6443.998074292916
+                "node": "RSUD Saiful Anwar, Malang, Indonesia",
+                "distance": 6384.167230377991
             }
         ]
     },
@@ -160,15 +160,15 @@
         "branch": [
             {
                 "node": "Alun-Alun Malang, Malang, Indonesia",
-                "distance": 8459.003943726855
+                "distance": 8459.015793203842
             },
             {
                 "node": "Kampung Warna-Warni Jodipan, Malang, Indonesia",
-                "distance": 8568.295326268246
+                "distance": 8568.307175745233
             },
             {
                 "node": "Pasar Besar Malang, Malang, Indonesia",
-                "distance": 7852.81409824988
+                "distance": 7852.825947726867
             }
         ]
     },
@@ -250,7 +250,7 @@
             },
             {
                 "node": "Stadion Kanjuruhan, Malang, Indonesia",
-                "distance": 8568.295326268244
+                "distance": 8568.30717574523
             },
             {
                 "node": "Alun-Alun Malang, Malang, Indonesia",
@@ -258,7 +258,7 @@
             },
             {
                 "node": "Terminal Arjosari, Malang, Indonesia",
-                "distance": 7002.235499106701
+                "distance": 7002.235502003903
             },
             {
                 "node": "Pasar Besar Malang, Malang, Indonesia",
@@ -292,7 +292,7 @@
             },
             {
                 "node": "Stadion Kanjuruhan, Malang, Indonesia",
-                "distance": 7852.814098249881
+                "distance": 7852.8259477268675
             }
         ]
     },

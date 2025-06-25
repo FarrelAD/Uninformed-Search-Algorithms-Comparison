@@ -141,7 +141,7 @@ def load_osm_data_online() -> nx.MultiDiGraph | None:
             "Mall Olympic Garden, Malang, Indonesia",
             "Universitas Brawijaya, Malang, Indonesia",
             "Universitas Negeri Malang, Malang, Indonesia",
-            "Rumah Sakit Saiful Anwar, Malang, Indonesia",
+            "RSUD Saiful Anwar, Malang, Indonesia",
             "Balai Kota Malang, Malang, Indonesia",
             "Terminal Arjosari, Malang, Indonesia",
             "Stadion Kanjuruhan, Malang, Indonesia",
